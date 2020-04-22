@@ -1,0 +1,245 @@
+cd /central/home/shill/caltech_gcm/exp/test_dry/run
+echo /central/home/shill/caltech_gcm/exp/test_dry/run
+echo Working directory is /home/shill/caltech_gcm/exp/test_dry/run
+set model_type = dry
+set analysis_type = 2d
+set run_name = default_dry
+set run_script = /home/shill/caltech_gcm/exp/test_dry/run/run_test
+set exp_home = /home/shill/caltech_gcm/exp/test_dry
+set exp_name = test_dry
+set fms_home = /home/shill/caltech_gcm/idealized
+echo /home/shill/caltech_gcm/idealized
+set days = 20
+set runs_per_script = 1
+set num_script_runs = 2
+set start_analysis = 1
+set days_per_segment = 20
+@ num_segments = 20 / 20
+echo num_segments = 1
+set data_dir_base = /central/groups/bordoni/shill/caltech_gcm
+set data_dir = /central/groups/bordoni/shill/caltech_gcm/fms_output/test_dry/default_dry
+echo
+echo *** Running /home/shill/caltech_gcm/exp/test_dry/run/run_test on hpc-25-04 on `date` ***
+date
+echo This jobs runs on the following nodes: hpc-25-04
+echo
+set analysis_version = analysis_2d
+set analysis_script = run_analysis_dry_2d
+set diagtable = /home/shill/caltech_gcm/exp/test_dry/input/diag_table_dry_2d
+set analysis_dir = /home/shill/caltech_gcm/analysis/analysis_2d/run
+source /etc/profile.d/modules.csh
+if ( 1 ) then
+set modules_shell=tcsh
+else
+set exec_prefix=/software/Modules/bin
+set prefix=
+set postfix=
+if ( 0 ) then
+set histchar = !
+endif
+if ( 0 ) then
+if ( 0 ) then
+set postfix = set _exit=$status; ; /usr/bin/test 0 = $_exit;
+alias module eval `/software/Modules/bin/modulecmd tcsh !*`; set _exit=$status; ; /usr/bin/test 0 = $_exit;
+unset exec_prefix
+unset prefix
+unset postfix
+setenv MODULESHOME /software/Modules
+if ( ! 1 ) then
+if ( ! 1 ) then
+eval `/software/Modules/bin/modulecmd tcsh load intel/18.1`
+/software/Modules/bin/modulecmd tcsh load intel/18.1
+set _exit=0
+/usr/bin/test 0 = 0
+eval `/software/Modules/bin/modulecmd tcsh load hdf5/1.10.1`
+/software/Modules/bin/modulecmd tcsh load hdf5/1.10.1
+set _exit=0
+/usr/bin/test 0 = 0
+eval `/software/Modules/bin/modulecmd tcsh load netcdf-c/4.6.1`
+/software/Modules/bin/modulecmd tcsh load netcdf-c/4.6.1
+set _exit=0
+/usr/bin/test 0 = 0
+eval `/software/Modules/bin/modulecmd tcsh load netcdf-fortran/4.4.4`
+/software/Modules/bin/modulecmd tcsh load netcdf-fortran/4.4.4
+set _exit=0
+/usr/bin/test 0 = 0
+echo MPI Used: `which srun`
+which srun
+limit stacksize unlimited
+cd /home/shill/caltech_gcm/exp/test_dry
+set tmpdir = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry
+set run_dir = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry
+set workdir = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir
+set output_dir = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output
+set platform = central
+set init_cond = 
+set pathnames = /home/shill/caltech_gcm/exp/test_dry/input/path_names
+set namelist = /home/shill/caltech_gcm/exp/test_dry/input/namelists_dry
+set fieldtable = /home/shill/caltech_gcm/exp/test_dry/input/field_table_dry
+set execdir = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/exe.fms
+set run_analysis = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis
+set analysis_out_err = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis/out_err
+set mppnccombine = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/mppnccombine.central
+set template = /home/shill/caltech_gcm/idealized/bin/mkmf.template.central
+set mkmf = /home/shill/caltech_gcm/idealized/bin/mkmf
+set sourcedir = /home/shill/caltech_gcm/idealized/src
+set time_stamp = /home/shill/caltech_gcm/idealized/bin/time_stamp.csh
+set ireload = 1
+set irun = 1
+set reload_file = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands
+if ( -d /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry ) then
+if ( -f /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands ) then
+source /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands
+set irun = 1
+set init_cond = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart/day0020h00.cpio
+set ireload = 2
+endif
+endif
+if ( ! -d /home/shill/caltech_gcm/exp/test_dry/run/out_err ) mkdir -p /home/shill/caltech_gcm/exp/test_dry/run/out_err
+if ( ! -d /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/exe.fms ) mkdir -p /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/exe.fms
+if ( ! -d /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis ) mkdir -p /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis
+if ( ! -d /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis/out_err ) mkdir -p /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis/out_err
+if ( ! -e /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir ) then
+mkdir /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/INPUT /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/RESTART
+else
+if ( ! -d /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output ) then
+if ( ! -f /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/mppnccombine.central ) then
+/bin/cp /home/shill/caltech_gcm/idealized/bin/mkmf.template.central /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/tmp_template
+echo fms_home = /home/shill/caltech_gcm/idealized
+cd /home/shill/caltech_gcm/idealized/src
+find /home/shill/caltech_gcm/exp/test_dry/srcmods/ -maxdepth 1 -iname *.f90 -o -iname *.inc -o -iname *.c -o -iname *.h
+echo Using the following sourcecode modifications:
+cat /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/tmp_pathnames
+cat /home/shill/caltech_gcm/exp/test_dry/input/path_names
+cd /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/exe.fms
+/home/shill/caltech_gcm/idealized/bin/mkmf -p fms.x -t /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/tmp_template -c -Duse_libMPI -Duse_netCDF -a /home/shill/caltech_gcm/idealized/src /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/tmp_pathnames /home/shill/caltech_gcm/idealized/src/shared/include /home/shill/caltech_gcm/idealized/src/shared/mpp/include
+........................................................................make -f Makefile
+cd /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/INPUT
+if ( /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart/day0020h00.cpio !=  ) then
+cp /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart/day0020h00.cpio day0020h00.cpio
+cpio -iv
+atmos_model.res
+atmosphere.res.nc
+diag_table
+input.nml
+spectral_dynamics.res.nc
+32627 blocks
+endif
+set ocean_mask = ocean_mask_T42.nc
+if ( -e /home/shill/caltech_gcm/exp/test_dry/input/ocean_mask_T42.nc ) then
+while ( 1 < = 1 )
+cd /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir
+if ( 2 == 1 && 1 == 1 ) then
+cat
+endif
+if ( dry == dry ) then
+cat
+else if ( dry == moist ) then
+cat
+endif
+cat /home/shill/caltech_gcm/exp/test_dry/input/namelists_dry
+cp /home/shill/caltech_gcm/exp/test_dry/input/diag_table_dry_2d diag_table
+cp /home/shill/caltech_gcm/exp/test_dry/input/field_table_dry field_table
+cp /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/exe.fms/fms.x fms.x
+cp input.nml /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry
+srun /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/fms.x
+
+WARNING from PE    0: Namelist mix_snapshot_average_fields = true will cause ERROR in time coordinates of all time_averaged fields. Strongly recommend mix_snapshot_average_fields = false
+
+set date_name = `$time_stamp -eh`
+/home/shill/caltech_gcm/idealized/bin/time_stamp.csh -eh
+if ( day0040h00 ==  ) set date_name = tmp`date '+%j%H%M%S'`
+if ( -f time_stamp.out ) rm -f time_stamp.out
+rm -f time_stamp.out
+mkdir /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00
+foreach ncfile ( `/bin/ls *.nc *.nc.????` )
+/bin/ls 4xday.nc.0000 4xday.nc.0001 4xday.nc.0002 4xday.nc.0003 4xday.nc.0004 4xday.nc.0005 4xday.nc.0006 4xday.nc.0007
+mv 4xday.nc.0000 /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00/day0040h00.4xday.nc.0000
+end
+mv 4xday.nc.0001 /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00/day0040h00.4xday.nc.0001
+end
+mv 4xday.nc.0002 /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00/day0040h00.4xday.nc.0002
+end
+mv 4xday.nc.0003 /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00/day0040h00.4xday.nc.0003
+end
+mv 4xday.nc.0004 /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00/day0040h00.4xday.nc.0004
+end
+mv 4xday.nc.0005 /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00/day0040h00.4xday.nc.0005
+end
+mv 4xday.nc.0006 /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00/day0040h00.4xday.nc.0006
+end
+mv 4xday.nc.0007 /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/combine/day0040h00/day0040h00.4xday.nc.0007
+end
+foreach out ( `/bin/ls *.out` )
+/bin/ls logfile.0000.out
+mv logfile.0000.out /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/logfiles/day0040h00.logfile.0000.out
+end
+cd /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/RESTART
+set resfiles = `/bin/ls *.res*`
+/bin/ls atmos_model.res atmosphere.res.nc spectral_dynamics.res.nc
+if ( 3 > 0 ) then
+set restart_file = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart/day0040h00.cpio
+if ( ! -d /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart ) mkdir -p /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart
+cp /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/input.nml /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir/diag_table .
+set files = ( atmos_model.res atmosphere.res.nc spectral_dynamics.res.nc input.nml diag_table )
+/bin/ls atmos_model.res atmosphere.res.nc spectral_dynamics.res.nc input.nml diag_table
+cpio -ocv
+atmos_model.res
+atmosphere.res.nc
+diag_table
+input.nml
+spectral_dynamics.res.nc
+32627 blocks
+mv day0040h00.cpio /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart/day0040h00.cpio
+if ( 1 < 1 ) then
+endif
+cd /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir
+set run_number = `expr $ireload \* $runs_per_script - $runs_per_script + $irun`
+expr 2 * 1 - 1 + 1
+echo Completed run 1 of 1 in bsub 2.
+set irun_prev = 1
+@ irun++
+if ( -f /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands_prev ) then
+if ( -f /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands ) mv -f /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands_prev
+mv -f /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/reload_commands_prev
+if ( 2 < = 1 ) then
+@ ireload++
+echo set irun         =  1
+endif
+echo set init_cond    =  /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart/day0040h00.cpio
+echo set ireload      =  3
+cd /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis
+if ( 2 > = 1 ) then
+set postproc_dir = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis/day0040h00
+if ( ! -e /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis/day0040h00 ) then
+mkdir -p /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis/day0040h00
+else
+cd /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis/day0040h00
+echo set exp_name = test_dry
+echo set data_dir = /central/groups/bordoni/shill/caltech_gcm/fms_output/test_dry/default_dry
+echo set run_name = default_dry
+echo set date_name = day0040h00
+echo set run_analysis = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis
+echo set fms_home = /home/shill/caltech_gcm/idealized
+echo set tmpdir = /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry
+echo set `grep num_fourier /home/shill/caltech_gcm/exp/test_dry/input/namelists_dry | tr ',' ' ' `
+tr ,  
+grep num_fourier /home/shill/caltech_gcm/exp/test_dry/input/namelists_dry
+echo set irun = 1
+echo set runs_per_script = 1
+echo set days_per_segment = 20
+echo set num_segments = 1
+echo set isegment = 1
+cp /home/shill/caltech_gcm/analysis/analysis_2d/run/run_analysis_dry_2d ./
+cd /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/analysis/day0040h00
+sbatch run_analysis_dry_2d
+endif
+if ( ! -f /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/output/restart/day0040h00.cpio ) then
+end
+while ( 2 < = 1 )
+rm -rf /central/groups/bordoni/shill/caltech_gcm/fms_tmp/test_dry/default_dry/workdir
+cd /home/shill/caltech_gcm/exp/test_dry/run
+if ( 3 > 2 ) then
+echo Note: not resubmitting job.
+else
+date
