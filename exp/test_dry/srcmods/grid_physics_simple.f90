@@ -43,43 +43,18 @@ module grid_physics
        ka, &  ! relaxation coefficient
        ks_days = 4., &  ! Newtonian damping coefficient in low
        ks, &  ! latitudes near surface
-       Cdrag = 5.e-6, &  ! quadratic "drag coefficient" [1/m]
-
-       ! Maximum surface temperature for Emanuel 95 critical profile
-       e95_max_temp = 350., &
-       !  Assumed tropopause-surface temperature difference
-       e95_trop_sfc_temp_diff = 100., &
-       ! Factor to make Emanuel 95 profiles sub- or super- critical.
-       e95_crit_multiplier = 1., &
-       ! Latitude (in degrees) at which to switch from the Emanuel 95 profile
-       ! to its tangent, from here to the same latitude in the opposite
-       ! hemisphere.
-       e95_lat_switch_tangent = 10., &
-       ! Extend the E95 profile this far in degrees latitude past the forcing
-       ! maximum before switching to flat.
-       e95_lat_past_max = 0.
+       Cdrag = 5.e-6  ! quadratic "drag coefficient" [1/m]
 
   real, public :: &
        sigma_b = 0.85  ! extent of `PBL' (also used to compute relaxation rates)
 
   logical, private :: &
        flatxt = .false., &  ! Flatten temperatures in extratropics.
-       flatt  = .false., &  ! Flatten temperatures in tropics.
-       ! Use critical temperature profile from Emanuel 1995.
-       do_e95_crit_temps = .false., &
-       ! Flatten temperatures in winter hemisphere (which must be the southern
-       ! hemisphere) and poleward of maximum to break equatorial symmetry.
-       e95_break_eq_symm = .false., &
-       ! Use dry adiabat as the vertical structure of the equilibrium
-       ! temperature profile
-       do_equil_adiabat = .false.
+       flatt  = .false.  ! Flatten temperatures in tropics.
 
   namelist /grid_phys_list/    &
        reference_sea_level_press, delh, tsfc_sp, phi0, lat_tropic, t_strat, &
-       scale_height_ratio, ka_days, ks_days, Cdrag, sigma_b, flatxt, flatt, &
-       do_e95_crit_temps, e95_break_eq_symm, e95_max_temp, &
-       e95_trop_sfc_temp_diff, e95_crit_multiplier, e95_lat_switch_tangent, &
-       e95_lat_past_max, do_equil_adiabat
+       scale_height_ratio, ka_days, ks_days, Cdrag, sigma_b, flatxt, flatt
 
   private grid_phys_list
 
@@ -120,29 +95,15 @@ contains
 
 
     if(mpp_pe()==mpp_root_pe()) then
-      if (do_e95_crit_temps) then
-        write(*, *)
-        write(*, *) 'Using critical temperature profile from Emanuel 1995'
-        write(*,10) 'Offset of temperature maximum from equator:', phi0, 'deg'
-        write(*,10) 'Emanuel 95 max surface temperature:', &
-             e95_max_temp, 'K'
-        write(*,10) 'Emanuel 95 tropopause-surface temperature difference:', &
-             e95_trop_sfc_temp_diff, 'K'
-        write(*,10) 'Emanuel 95 criticality multiplier:', &
-             e95_crit_multiplier, '(dimensionless)'
-        write(*,*) 'Emanuel 95 equatorial symmetry broken:', &
-             e95_break_eq_symm
-      else
-        write(*, *) 'Parameters in radiative equilibrium surface temperature:'
-        write(*,10) 'South pole surface temperature:             ', tsfc_sp, &
-             'K'
-        write(*,10) 'Equator-pole surface temperature contrast:  ', delh, 'K'
-        write(*,10) 'Offset of temperature maximum from equator: ', phi0, 'deg'
+      write(*, *) 'Parameters in radiative equilibrium surface temperature:'
+      write(*,10) 'South pole surface temperature:             ', tsfc_sp, &
+            'K'
+      write(*,10) 'Equator-pole surface temperature contrast:  ', delh, 'K'
+      write(*,10) 'Offset of temperature maximum from equator: ', phi0, 'deg'
 
-        write(*, *) 'Relaxation toward radiative equilibrium state of a'
-        write(*, *) 'semi-gray atmosphere with an isothermal stratosphere'
-        write(*,10) 'at temperature t_strat =', t_strat, 'K.'
-      endif
+      write(*, *) 'Relaxation toward radiative equilibrium state of a'
+      write(*, *) 'semi-gray atmosphere with an isothermal stratosphere'
+      write(*,10) 'at temperature t_strat =', t_strat, 'K.'
 
       write(*, *)
       write(*,10) 'Relaxation time scale in interior atmosphere:       ', &
@@ -151,12 +112,8 @@ contains
            ks_days, 'days'
 
       write(*, *)
-      if (do_equil_adiabat) then
-         write(*, *) 'Using dry adiabat for equilibrium temperature profile.'
-      else
-         write(*,10) 'Ratio of absorber scale height to pressure scale height:',&
-              scale_height_ratio
-      endif
+      write(*,10) 'Ratio of absorber scale height to pressure scale height:',&
+           scale_height_ratio
 
       write(*, *)
       write(*, *) 'Quadratic friction in boundary layer.'
@@ -164,7 +121,7 @@ contains
       write(*,20) 'Drag coeff. for quadratic PBL drag: Cdrag =', Cdrag, &
            'm**(-1)'
       write(*, *)
-    endif
+   endif
 
 10  format(1x,a,1x,f8.2,1x,a)
 20  format(1x,a,1x,e8.2,1x,a)
@@ -313,8 +270,7 @@ contains
     dt_tg        = dt_tg + heating_rate
 
 ! send data to diagnostic manager
-       if (id_tdt > 0) used = send_data(id_tdt, heating_rate, Time,      &
-            is, js)
+       if (id_tdt > 0) used = send_data(id_tdt, heating_rate, Time, is, js)
 
   end subroutine diabatic_forcing
 
@@ -379,11 +335,7 @@ contains
     p_full_ref = p_full / reference_sea_level_press
 
     ! surface temperature in background state
-    if (do_e95_crit_temps) then
-       t_sfc = sfc_temp_emanuel95_crit(lat)
-    else
-       t_sfc = surface_temperature_forced(lat)
-    end if
+     t_sfc = surface_temperature_forced(lat)
 
     ! latitude-dependent optical thickness
     optical_thickness = (t_sfc / t_strat)**4 - 1.
@@ -394,43 +346,15 @@ contains
        sigma_norm = (sigma - sigma_b) / (1.0 - sigma_b)
        sigma_max  = max(sigma_norm, 0.0) ! sigma_max = 0 outside `PBL'
 
-       ! Newtonian damping coefficient
-       ! kt = ka + (ks - ka) * sigma_max * cos(lat - phi0*DEG_TO_RAD )**8
-       ! Spencer Hill: removing latitudinal dependence.  Simulating somewhat
-       ! exotic atmospheres for which the ascent location isn't well known a
-       ! priori, even given the imposed temperature profile being relaxed to.
-       ! So making the relaxation uniform in latitude seems the wisest choice.
-       ! Also, the above formulations yields a damping coefficient that is
-       ! non-monotonic latitude in the winter hemisphere for off-equatorial
-       ! phi0.
-       kt = ka + (ks - ka) * sigma_max
+       kt = ka + (ks - ka) * sigma_max * cos(lat - phi0*DEG_TO_RAD )**8
 
-
-       ! Spencer Hill: relax towards an adiabat, rather than a radiative
-       ! equilibrium profile
-       if (do_equil_adiabat) then
-          t_adiabat = t_sfc * &
-               (p_full(:,:,k) / reference_sea_level_press)**KAPPA
-          temp_eq(:,:,k) = max(t_adiabat, t_strat)
-       else
-         ! temperature in background state is radiative equilibrium
-         ! of a gray atmosphere (cf. Goody and Yung, pp. 392 ff.)
-
-         ! Spencer Hill: replacing p_full_ref array, which varies in space and
-         ! time, with sigma, which does not.  For my simulations, conceptual
-         ! simplicity is more important than physical realism, so it's better to
-         ! use a fixed vertical structure of the relaxation field than one that
-         ! more accurately approximates a true radiative-equilibrium temperature
-         ! profile at each location, given it's surface pressure at that
-         ! timestep.
-         temp_eq(:,:,k) =                                                  &
-              t_strat * (1. + optical_thickness *                          &
-              sigma**scale_height_ratio)**(1./4.)
-      endif
-
-      ! relax towards background state
-      heating_rate(:, :, k) = ( temp_eq(:,:,k)  - temp(:, :, k) ) * kt
-
+       ! temperature in background state is radiative equilibrium
+       ! of a gray atmosphere (cf. Goody and Yung, pp. 392 ff.)
+       temp_eq(:,:,k) =                                                  &
+            t_strat * (1. + optical_thickness *                          &
+            p_full_ref(:,:,k)**scale_height_ratio)**(1./4.)
+       ! relax towards background state
+       heating_rate(:, :, k) = ( temp_eq(:,:,k)  - temp(:, :, k) ) * kt
     end do
 
     if (id_teq > 0) used = send_data ( id_teq, temp_eq,  Time, is, js)
@@ -498,114 +422,5 @@ contains
     endif
 
   end function surface_temperature_forced
-
-  !-----------------------------------------------------------------------
-
-  function sfc_temp_emanuel95_crit(lat) &
-    result(sfc_temp)
-
-    ! Spencer Hill, 2017-09.  Replaces the standard relaxation temperature
-    ! profile defined in `relax_to_gray_equilibrium` with a "critical" profile
-    ! as defined in Eq. (11) of Emanuel (1995).  That expression is for
-    ! subcloud equivalent potential temperature.  For a dry atmosphere, that
-    ! effectively amounts to the boundary layer potential temperature.  We make
-    ! the additional assumption that this approximately equals the actual
-    ! surface temperature.
-
-    implicit none
-
-    real, intent(in), dimension(:, :) :: lat
-
-    real, dimension(size(lat, 1), size(lat, 2)) :: &
-         lat_deg, sfc_temp, cos_lat, cos_lat_2, lat_dependence, &
-         sfc_temp_deriv, tangent_at_switch
-
-    real :: chi, cos_phi0
-    real :: &
-         cos_lat_switch, tangent_multiplier, deriv_at_switch, &
-         sfc_temp_at_switch, tangent_at_eq
-    real :: lat_past_max, cos_lat_past_max, sfc_temp_past_max
-
-    integer :: j
-
-    lat_deg = lat*RAD_TO_DEG
-    if (int(phi0) .eq. 0) then
-       cos_phi0 = 1.
-    else
-       cos_phi0 = cos(phi0*DEG_TO_RAD)
-    endif
-    cos_lat = cos(lat)
-    cos_lat_2 = cos_lat * cos_lat
-
-    chi = e95_crit_multiplier * (OMEGA**2)*(RADIUS**2) / &
-         (CP_AIR*e95_trop_sfc_temp_diff)
-    lat_dependence = (cos_phi0**2 - cos_lat_2)**2 / cos_lat_2
-
-    sfc_temp = e95_max_temp * exp(-0.5 * chi * lat_dependence)
-
-    ! Spencer Hill 2017-10: break equatorial symmetry (if desired) by
-    ! flattening temperatures poleward of the maximum and throughout the
-    ! opposite hemisphere.
-    if (e95_break_eq_symm) then
-
-       ! Spencer Hill, 2017-12-07: to give rise to a nonzero gradient at the
-       ! equator, switch from the E95 profile to its tangent within a given
-       ! distance of the equator.  The intent of this modification is to
-       ! prevent large equatorial jumps of the cross equatorial Hadley cell,
-       ! c.f. the arguments by Pauluis (2004) JAS.
-       cos_lat_switch = cos(real(e95_lat_switch_tangent*DEG_TO_RAD))
-
-       ! Spencer Hill 2017-12-09: multiplying slope of tangent line by >1
-       ! factor to get stronger cross equatorial gradient, to further suppress
-       ! the equatorial jump.
-       tangent_multiplier = 1.
-
-       sfc_temp_at_switch = e95_max_temp * exp(-0.5 * chi * &
-            (cos_phi0**2 - cos_lat_switch**2)**2 / cos_lat_switch**2)
-
-       sfc_temp_deriv = chi * sfc_temp * sin(lat)*cos_lat * &
-            (1. - (cos_phi0 / cos_lat)**4)
-
-       deriv_at_switch = chi * sfc_temp_at_switch * &
-            sin(e95_lat_switch_tangent*DEG_TO_RAD) * cos_lat_switch * &
-            (1. - (cos_phi0 / cos_lat_switch)**4) * tangent_multiplier
-
-       tangent_at_eq = sfc_temp_at_switch + &
-            deriv_at_switch * -1 * e95_lat_switch_tangent*DEG_TO_RAD
-
-       ! Spencer Hill 2018-07-20: allow Emanuel 1995 solution to extend
-       ! poleward of the forcing maximum by a given latitudinal extent.
-       lat_past_max = min(real(phi0 + e95_lat_past_max), 90.)
-       cos_lat_past_max = cos(lat_past_max*DEG_TO_RAD)
-
-       sfc_temp_past_max = e95_max_temp * exp(-0.5 * chi * &
-            (cos_phi0**2 - cos_lat_past_max**2)**2 / cos_lat_past_max**2)
-
-       do j = 1, size(lat, 2)
-          tangent_at_switch(:, j) = sfc_temp_at_switch + deriv_at_switch * &
-               (lat(:, j) - e95_lat_switch_tangent*DEG_TO_RAD)
-
-          if (lat_deg(1, j) < -1*e95_lat_switch_tangent) then
-             ! flat south of the switch latitude
-             sfc_temp(:, j) = tangent_at_eq - &
-                  (sfc_temp_at_switch - tangent_at_eq)
-          elseif (lat_deg(1, j) < e95_lat_switch_tangent) then
-             ! linear within the equatorial band"
-             sfc_temp(:, j) = tangent_at_switch(:, j)
-          elseif (lat_deg(1, j) > lat_past_max) then
-             ! flat poleward of the (maximum + offset)
-             sfc_temp(:, j) = sfc_temp_past_max
-          endif
-       enddo
-
-    else
-       ! Spencer Hill 2018-07-20: prevent surface forcing temperature from
-       ! dropping below the specified stratospheric temperature, since
-       ! otherwise these profiles will approach absolute zero at some latitude.
-       sfc_temp = max(sfc_temp, t_strat)
-
-    endif
-
-  end function sfc_temp_emanuel95_crit
 
 end module grid_physics

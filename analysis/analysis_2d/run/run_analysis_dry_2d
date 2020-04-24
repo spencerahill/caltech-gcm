@@ -90,7 +90,8 @@ end
 
 #### STEP 2: Run the analysis ####
 
-set successful_analysis = 1 # this gets set to 0 if an indicator suggests any instance of analysis failed.
+# This gets set to 0 if an indicator suggests any instance of analysis failed.
+set successful_analysis = 1
 
 
 # Build analysis code
@@ -171,6 +172,8 @@ EOF
       DragMOVarName = 'drag_coeff_mo',
       DragLHVarName = 'drag_coeff_lh',
       DragSHVarName = 'drag_coeff_sh',
+      UDragTendVarName = 'u_quad_drag_tend',
+      VDragTendVarName = 'v_quad_drag_tend',
       is_gaussian = .true.,
       isentrope = .true.,
       moisture  = .false.,

@@ -35,10 +35,10 @@ set fms_home       = $cwd:h:h:h/idealized         # directory containing model s
 
 echo $fms_home
 
-set days            = 20                            # length of integration
+set days            = 10                             # length of integration
 set runs_per_script = 1                              # number of runs within this script
 set num_script_runs = 2                              # how many times to resubmit script to queue
-set start_analysis  = 1                              # number of script run at which to start analysis (after spin-up)
+set start_analysis  = 2                              # number of script run at which to start analysis
 set days_per_segment = ${days}                       # days per segment of analysis (for seasonally-varying analysis)
 
 @ num_segments       = ${days} / ${days_per_segment} # number of analysis segments
@@ -230,9 +230,9 @@ EOF
 	tapio_forcing        = .true.,
 	hs                   = .false.,
 	atmos_water_correction = .false.,
-	roughness_mom        = 0.05,
-	roughness_heat       = 0.05,
-	roughness_moist      = 0.05,
+	roughness_mom        = 1e-10,
+	roughness_heat       = 1e-10,
+	roughness_moist      = 1e-10,
 	bucket               = .false./
 
 EOF
@@ -300,7 +300,7 @@ EOF
 	delh                     = 90.,
 	ka_days                  = 50.0,
 	ks_days                  = 7.0,
-	Cdrag                    = 0.0e-5,
+	Cdrag                    = 5.0e-6,
 	t_strat                  = 200.0,
 	sigma_b                  = 0.85,
 	scale_height_ratio       = 3.5,

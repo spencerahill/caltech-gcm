@@ -1,10 +1,10 @@
 module get_grid_fields_mod
 
   ! all subroutines that use harmonic transforms reside here
-  
+
   use constants_and_switches_mod
 
-  use input_mod  
+  use input_mod
 
   use local_utilities_mod, only :                                             &
                       mrdnl_gradient,                   tetens_sat_mr_mod,    &
@@ -14,12 +14,12 @@ module get_grid_fields_mod
   implicit none
 
   public ::         grid_fields_init,                 get_grid_fields,        &
-                       surf_gradient,             zonal_spectrum_grid,        & 
+                       surf_gradient,             zonal_spectrum_grid,        &
                        zonal_cospectrum_grid
 
   integer ::                                                                  &
-       lwork,              &   ! len. single-precision work array 
-       ldwork,             &   ! len. double-precision work array 
+       lwork,              &   ! len. single-precision work array
+       ldwork,             &   ! len. double-precision work array
        lshags,             &   ! len. scalar analysis work array, gaussian
        lvhsgs,             &   ! len. vector synthesis work array, gaussian
        lshsgs,             &   ! len. scalar synthesis work array, gaussian
@@ -52,7 +52,7 @@ module get_grid_fields_mod
        pk_local,           &   ! pressure coefficients
        bk_local,           &   ! sigma coefficients
        fnn,                &   ! array of 1/(n*n+1) for spectral conversions
-       weight,             &   ! weights for vertical averages    
+       weight,             &   ! weights for vertical averages
        dpk,                &   ! used in four_in_one
        dbk                     ! used in four_in_one
 
@@ -62,7 +62,7 @@ module get_grid_fields_mod
        bt_v_coef_a,         &   ! V cosine spectral coeff.
        bt_v_coef_b,         &   ! V sine spectral coeff.
        bt_vor_coef_a,    &   ! barotropic vorticity cosine spectral coeff.
-       bt_vor_coef_b       ! barotropic vorticity sine spectral coeff. 
+       bt_vor_coef_b       ! barotropic vorticity sine spectral coeff.
 
 
   real, allocatable, dimension(:,:,:) ::                             &
@@ -92,19 +92,19 @@ module get_grid_fields_mod
 
   double precision, allocatable, dimension(:) ::                              &
        dwork                   ! double-precision work array (not saved)
-  
+
 
   logical ::                                                                  &
        is_gaussian,        &   ! true for Gaussian grid; false for equal-spaced
        moisture,           &   ! true for moisture analysis
        moist_isentropes        ! true to interpolate to moist isentropes
-  
+
   real, allocatable, dimension(:,:) ::       &
-       sin_lat_xy,         &   ! xy cosine(latitude) array                                
+       sin_lat_xy,         &   ! xy cosine(latitude) array
        cos_lat_xy,         &   ! xy cosine(latitude) array
        surf_geopot             ! surface geopotential
 
-contains 
+contains
 
 ! ##############################################################################
 
@@ -133,7 +133,7 @@ contains
          local_is_gaussian,&   ! switch for Gaussian grid
          local_moisture,   &   ! switch for moisture
          local_moist_isentropes    ! interpolate to equivalent potential temp.
-    
+
     real, dimension(:,:), intent(in) ::                                       &
          local_sin_lat_xy, &   ! xy   sine(latitude) array
          local_cos_lat_xy, &   ! xy cosine(latitude) array
@@ -212,7 +212,7 @@ contains
      lshsgs = num_lat*(3*(l1+l2)-2)+(l1-1)*(l2*(2*num_lat-l1)-3*l1)/2+num_lon+15
      lvhags = (num_lat+1)*(num_lat+1)*num_lat/2 + num_lon + 15
      lvhsgs = l1*l2*(num_lat+num_lat-l1+1)+num_lon+15+2*num_lat
-     !     
+     !
      allocate(     wshags(lshags)  )
      allocate(     wshsgs(lshsgs)  )
      allocate(     wvhsgs(lvhsgs)  )
@@ -221,7 +221,7 @@ contains
   !   lwork = num_lat*((2*num_lev+1)*num_lon+4*num_lev*l1+1)
      lwork  = num_lat*(2*num_lev*num_lon+max0(6*(num_lat+1)/2,num_lon))  &
           +4*(min0(num_lat,(num_lon+1)/2)*num_lat*num_lev+num_lat) * 10
-     ldwork = (3*num_lat*(num_lat+3)+2)/2 * 10 
+     ldwork = (3*num_lat*(num_lat+3)+2)/2 * 10
      allocate(       work(lwork)   )
      allocate(      dwork(ldwork)  )
      !
@@ -231,20 +231,20 @@ contains
                                dwork,                          ldwork,        &
                               ierror )
      if(ierror.ne.0) write(*,*) 'after shagsi, ierror=',ierror
-     
+
      call shsgsi(            num_lat,                         num_lon,        &
                               wshsgs,                          lshsgs,        &
                                 work,                           lwork,        &
                                dwork,                          ldwork,        &
                               ierror )
      if(ierror.ne.0) write(*,*) 'after shsgsi, ierror=',ierror
-     
+
      call vhsgsi(            num_lat,                         num_lon,        &
                               wvhsgs,                          lvhsgs,        &
                                dwork,                          ldwork,        &
                               ierror )
      if(ierror.ne.0) write(*,*) 'after vhsgsi, ierror: ',ierror
-     
+
      call vhagsi(            num_lat,                         num_lon,        &
                               wvhags,                          lvhags,        &
                                 work,                           lwork,        &
@@ -255,7 +255,7 @@ contains
 
      if(num_lon > 3) then
         l1 = min0(num_lat,(num_lon+2)/2)
-        l2 = (num_lat+1)/2 
+        l2 = (num_lat+1)/2
         lshaes = (l1*l2*(num_lat+num_lat-l1+1))/2+num_lon+15
         lvhaes =  l1*l2*(num_lat+num_lat-l1+1)+num_lon+15
         lvhses = lvhaes
@@ -264,34 +264,34 @@ contains
         allocate(      wvhaes(lvhaes) )
         allocate(      wshses(lshses) )
         allocate(      wvhses(lvhses) )
-        
+
         lwork = num_lat*((2*num_lev+1)*num_lon+4*num_lev*l1+1)
         ldwork = (3*num_lat*(num_lat+3)+2)/2
         allocate(       work(lwork)   )
         allocate(      dwork(ldwork)  )
-     
-     
+
+
         call shaesi(         num_lat,                         num_lon,        &
                               wshaes,                          lshaes,        &
                                 work,                           lwork,        &
                                dwork,                          ldwork,        &
                               ierror )
         if(ierror.ne.0) write(*,*) 'after shaesi, ierror: ',ierror
-        
+
         call vhsesi(         num_lat,                         num_lon,        &
                               wvhses,                          lvhses,        &
                                 work,                           lwork,        &
                                dwork,                          ldwork,        &
                               ierror )
         if(ierror.ne.0) write(*,*) 'after vhsesi, ierror: ',ierror
-     
+
         call vhaesi(         num_lat,                         num_lon,        &
                               wvhaes,                          lvhaes,        &
                                 work,                           lwork,        &
                                dwork,                          ldwork,        &
                               ierror )
         if(ierror.ne.0) write(*,*) 'after vhaesi, ierror: ',ierror
-        
+
         call shsesi(         num_lat,                         num_lon,        &
                               wshses,                          lshses,        &
                                 work,                           lwork,        &
@@ -299,7 +299,7 @@ contains
                               ierror )
      endif
   endif
-  
+
   if(num_lon > 3) then
      call hrffti(num_lon, wsave)
   endif
@@ -313,16 +313,16 @@ contains
      call pressure_variables_NCEP_init(sigma, pk, bk)
   elseif(data_source == CCM3) then
      call pressure_variables_CCM3_init(sigma, pk, bk)
-  elseif(data_source == ERA40) then 
+  elseif(data_source == ERA40) then
      call pressure_variables_ERA40_init(sigma, pk, bk)
   endif
-  
+
   allocate( pk_local(num_lev+1))
   allocate( bk_local(num_lev+1))
-  
+
   pk_local = pk
   bk_local = bk
-  
+
   ! generate 1/(n*(n+1))
   allocate( fnn(num_fourier+1))
   do i=2, num_fourier+1
@@ -351,34 +351,55 @@ contains
 ! ##############################################################################
 
 
-  subroutine get_grid_fields(                                                 &
-                              u_grid,                          v_grid,        &
-                            vor_grid,                        div_grid,        &
-                           temp_grid,                       shum_grid,        &
-                             ts_grid,                                         &
-                             ps_grid,                       vcos_grid,        &
-                              w_grid,                           theta,        &
-                             theta_e,                     theta_e_sat,        &
-                              p_half,                          p_full,        &
-                           mont_grid,                     mont_x_grid,        &
-                          sfctn_grid,                           sigma,        &
-                      hor_sfctn_grid,                   bt_sfctn_grid,        &
-                       bc_sfctn_spec,                   bt_sfctn_spec,        &
-                          theta_spec,                       conv_spec,        &
-                              t_spec,                                         &
-                        non_lin_spec,               non_lin_eddy_spec,        &
-                      t_non_lin_spec,             t_non_lin_eddy_spec,        &
-                     bt_non_lin_spec,            bt_non_lin_eddy_spec,        &
-                       coriolis_spec,                       dpdt_grid,        &
-                           shum_spec,                   sat_shum_spec,        &
-                           rhum_spec,                    theta_e_spec,        &
-                   virtual_temp_grid,                                         &
-                         geopot_grid,                     sat_mr_grid,        &
-                       sat_shum_grid,                       rhum_grid)
+  subroutine get_grid_fields( &
+       u_grid, &
+       v_grid, &
+       vor_grid, &
+       div_grid, &
+       temp_grid, &
+       shum_grid, &
+       ts_grid, &
+       ps_grid, &
+       vcos_grid, &
+       w_grid, &
+       theta, &
+       theta_e, &
+       theta_e_sat, &
+       p_half, &
+       p_full, &
+       mont_grid, &
+       mont_x_grid, &
+       sfctn_grid, &
+       sigma, &
+       hor_sfctn_grid, &
+       bt_sfctn_grid, &
+       bc_sfctn_spec, &
+       bt_sfctn_spec, &
+       theta_spec, &
+       conv_spec, &
+       t_spec, &
+       non_lin_spec, &
+       non_lin_eddy_spec, &
+       t_non_lin_spec, &
+       t_non_lin_eddy_spec, &
+       bt_non_lin_spec,&
+       bt_non_lin_eddy_spec, &
+       coriolis_spec, &
+       dpdt_grid, &
+       shum_spec, &
+       sat_shum_spec, &
+       rhum_spec, &
+       theta_e_spec, &
+       virtual_temp_grid, &
+       geopot_grid, &
+       sat_mr_grid, &
+       sat_shum_grid, &
+       rhum_grid, &
+       dy_geopot_grid)
 
 
 ! This routine does the following:
-!           1. Does whatever conversions are necessary so that U, V,  
+!           1. Does whatever conversions are necessary so that U, V,
 !              vorticity, and divergence are all in gridpoint space.
 !           2. Calculates spectra of baroclinic and barotropic streamfunctions,
 !              conversion of pe -> ke, and potential temperature
@@ -390,30 +411,30 @@ contains
 !                           --- Input arguments ---
 
     real, dimension(:,:,:), intent(in)  ::                                    &
-         temp_grid,        &   ! gridpoint temperature 
-         virtual_temp_grid,&   ! gridpoint virtual temperature 
+         temp_grid,        &   ! gridpoint temperature
+         virtual_temp_grid,&   ! gridpoint virtual temperature
          shum_grid             ! gridpoint specific humidity
 
 
     real, dimension(:, :), intent(in)  ::                                     &
          ts_grid,          &
          ps_grid               ! surface pressure
- 
+
 !                        --- Input/Output arguments ---
 
     real, dimension(:, :, :), intent(inout) ::                                &
-         u_grid,           &   ! gridpoint zonal wind 
+         u_grid,           &   ! gridpoint zonal wind
          v_grid,           &   ! gridpoint meridional wind
          vor_grid,         &   ! gridpoint vorticity
-         div_grid              ! gridpoint divergence 
+         div_grid              ! gridpoint divergence
 
-    real, dimension(:, :), intent(inout) ::  &            
-         bc_sfctn_spec,    &   ! baroclinic spectral coefficients            
+    real, dimension(:, :), intent(inout) ::  &
+         bc_sfctn_spec,    &   ! baroclinic spectral coefficients
          bt_sfctn_spec,    &     ! barotropic spectral coefficients
          bt_non_lin_spec,     &   ! barotropic spectrum of non-linear interaction
          bt_non_lin_eddy_spec     ! exclude interaction with modes m=0
 
-    
+
     real, dimension(:, :, :), intent(inout) ::                                &
          theta_spec,       &   ! potential temperature spectrum
          t_spec,           &   ! potential temperature spectrum
@@ -498,13 +519,13 @@ contains
          coriolis_div_coef_b,        &   ! see Lambert 1984 equation 22
          vor_adv_coef_a,             &   ! vorticity advection cosine spectral coeff.
          vor_adv_coef_b,             &   ! vorticity advection sine spectral coeff.
-         vor_adv_eddy_coef_a,        &   ! for use in m \neq 0 non-linear interaction 
+         vor_adv_eddy_coef_a,        &   ! for use in m \neq 0 non-linear interaction
          vor_adv_eddy_coef_b,        &     ! for use in m \neq 0 non-linear interaction
          temp_adv_coef_a,            &   ! vorticity advection cosine spectral coeff.
          temp_adv_coef_b,            &   ! vorticity advection sine spectral coeff.
-         temp_adv_eddy_coef_a,       &   ! for use in m \neq 0 non-linear interaction 
+         temp_adv_eddy_coef_a,       &   ! for use in m \neq 0 non-linear interaction
          temp_adv_eddy_coef_b            ! for use in m \neq 0 non-linear interaction
- 
+
 
     real, dimension(num_lat, num_lev)            ::                           &
          vor_grid_x_zon_ave,        &    ! zonal ave x derivative of vorticity
@@ -525,19 +546,19 @@ contains
 
     real, dimension(num_lon, num_lat, num_lev)   ::                           &
          mixing_ratio,     &   ! water vapor mixing ratio
-         t_lcl,            &   ! lifted condensation level temperature (K) 
-         dry_pot_temp,     &   ! dry potential temperature (K) 
-         vapor_pressure        ! water vapor pressure (Pa) 
+         t_lcl,            &   ! lifted condensation level temperature (K)
+         dry_pot_temp,     &   ! dry potential temperature (K)
+         vapor_pressure        ! water vapor pressure (Pa)
 
     real, dimension(num_lon, num_lat, num_lev+1) ::                           &
-         ln_p_half,        &   ! log of pressure on half model levels        
+         ln_p_half,        &   ! log of pressure on half model levels
          w_grid_half           ! d(sigma)/dt on half model levels
 
-    
+
 
     integer :: k               ! level counter
     integer :: i               ! longitude counter
-    integer :: j               
+    integer :: j
 
 !                           --- executable code ---
 
@@ -568,20 +589,20 @@ contains
   w_coef_b         = 0.0
   coriolis_div_coef_a = 0.0
   coriolis_div_coef_b = 0.0
-  vor_adv_coef_a = 0.0 
+  vor_adv_coef_a = 0.0
   vor_adv_coef_b = 0.0
-  bt_vor_adv_coef_a = 0.0 
+  bt_vor_adv_coef_a = 0.0
   bt_vor_adv_coef_b = 0.0
-  vor_adv_eddy_coef_a = 0.0 
+  vor_adv_eddy_coef_a = 0.0
   vor_adv_eddy_coef_b = 0.0
-  bt_vor_adv_eddy_coef_a = 0.0 
+  bt_vor_adv_eddy_coef_a = 0.0
   bt_vor_adv_eddy_coef_b = 0.0
 
 
 !                --- U and V  from vorticity and divergence ---
 
-    if(DataIn .eq. vor_and_div) then     
-       
+    if ((DataIn .eq. vor_and_div) .or. (DataIn .eq. all)) then
+
        call scalar_to_spec( vor_grid,                      vor_coef_a,        &
                           vor_coef_b )
 
@@ -603,13 +624,13 @@ contains
 
        u_nondiv_grid(:,:,:) = u_nondiv_grid(:,:,:)*radius
        v_nondiv_grid(:,:,:) = v_nondiv_grid(:,:,:)*radius
-                       
+
        call streamfunction_coef(                                              &
                                 -fnn,                      vor_coef_a,        &
                           vor_coef_b,                   bc_sfctn_spec,        &
                        bt_sfctn_spec,                   bt_sfctn_grid,        &
                        hor_sfctn_grid,                  bt_vor_coef_a,        &
-                       bt_vor_coef_b   ) 
+                       bt_vor_coef_b   )
 
 
 !       bt_vor_coef_a(:,:)=bt_vor_coef_a(:,:)!/radius**2
@@ -618,10 +639,10 @@ contains
        call u_v_from_vor_div_1lev(                                                 &
                           bt_vor_coef_a,                      bt_vor_coef_b,        &
                           div_coef_a(:,:,1)*0,                div_coef_b(:,:,1)*0,        &
-                          bt_u_nondiv_grid,                   bt_v_nondiv_grid )  
+                          bt_u_nondiv_grid,                   bt_v_nondiv_grid )
 
- 
-                          
+
+
        bt_u_nondiv_grid(:,:) = bt_u_nondiv_grid(:,:)*radius
        bt_v_nondiv_grid(:,:) = bt_v_nondiv_grid(:,:)*radius
 
@@ -629,8 +650,8 @@ contains
        call vector_to_spec_1lev(                                                   &
                               bt_u_nondiv_grid,                          bt_v_nondiv_grid,        &
                             bt_u_coef_a,                        bt_u_coef_b,        &
-                            bt_v_coef_a,                        bt_v_coef_b )       
- 
+                            bt_v_coef_a,                        bt_v_coef_b )
+
 
        call vor_div_from_u_v_1lev(                                                 &
                             bt_u_coef_a,                        bt_u_coef_b,        &
@@ -642,12 +663,12 @@ contains
 
 !               --- vorticity and divergence from U and V  ---
 
-    if(DataIn .eq. u_and_v)then
+    if ((DataIn .eq. u_and_v) .or. (DataIn .eq. all)) then
 
        call vector_to_spec(                                                   &
                               u_grid,                          v_grid,        &
                             u_coef_a,                        u_coef_b,        &
-                            v_coef_a,                        v_coef_b )       
+                            v_coef_a,                        v_coef_b )
 
        call vor_div_from_u_v(                                                 &
                             u_coef_a,                        u_coef_b,        &
@@ -656,13 +677,13 @@ contains
 
        vor_grid(:,:,:) = vor_grid(:,:,:)/radius
        div_grid(:,:,:) = div_grid(:,:,:)/radius
-       
+
     endif
 
 
 
-    do k = 1, num_lev 
-       vcos_grid(:,:,k) = v_grid(:,:,k)*cos_lat_xy 
+    do k = 1, num_lev
+       vcos_grid(:,:,k) = v_grid(:,:,k)*cos_lat_xy
     end do
 
 
@@ -691,7 +712,7 @@ contains
 
     vor_adv_grid = vor_grid_x * u_nondiv_grid + vor_grid_y * v_nondiv_grid ! vorticity
 
-    bt_vor_adv_grid = bt_vor_grid_x * bt_u_nondiv_grid + bt_vor_grid_y * bt_v_nondiv_grid 
+    bt_vor_adv_grid = bt_vor_grid_x * bt_u_nondiv_grid + bt_vor_grid_y * bt_v_nondiv_grid
 
     temp_adv_grid = temp_grid_x * u_nondiv_grid + temp_grid_y * v_nondiv_grid
 
@@ -706,15 +727,15 @@ contains
     bt_vor_grid_y_zon_ave     = sum(bt_vor_grid_y,1)/num_lon
     bt_u_nondiv_grid_zon_ave  = sum(bt_u_nondiv_grid,1)/num_lon
     bt_v_nondiv_grid_zon_ave  = sum(bt_v_nondiv_grid,1)/num_lon
-    
+
     do i=1, num_lon
-     vor_grid_x(i,:,:)     = vor_grid_x(i,:,:)    - vor_grid_x_zon_ave 
+     vor_grid_x(i,:,:)     = vor_grid_x(i,:,:)    - vor_grid_x_zon_ave
      vor_grid_y(i,:,:)     = vor_grid_y(i,:,:)    - vor_grid_y_zon_ave
      u_nondiv_grid(i,:,:)  = u_nondiv_grid(i,:,:) - u_nondiv_grid_zon_ave
-     v_nondiv_grid(i,:,:)  = v_nondiv_grid(i,:,:) - v_nondiv_grid_zon_ave 
-     temp_grid_x(i,:,:)    = temp_grid_x(i,:,:)    - temp_grid_x_zon_ave 
-     temp_grid_y(i,:,:)    = temp_grid_y(i,:,:)    - temp_grid_y_zon_ave     
-     bt_vor_grid_x(i,:)    = bt_vor_grid_x(i,:)    - bt_vor_grid_x_zon_ave 
+     v_nondiv_grid(i,:,:)  = v_nondiv_grid(i,:,:) - v_nondiv_grid_zon_ave
+     temp_grid_x(i,:,:)    = temp_grid_x(i,:,:)    - temp_grid_x_zon_ave
+     temp_grid_y(i,:,:)    = temp_grid_y(i,:,:)    - temp_grid_y_zon_ave
+     bt_vor_grid_x(i,:)    = bt_vor_grid_x(i,:)    - bt_vor_grid_x_zon_ave
      bt_vor_grid_y(i,:)    = bt_vor_grid_y(i,:)    - bt_vor_grid_y_zon_ave
      bt_u_nondiv_grid(i,:) = bt_u_nondiv_grid(i,:) - bt_u_nondiv_grid_zon_ave
      bt_v_nondiv_grid(i,:) = bt_v_nondiv_grid(i,:) - bt_v_nondiv_grid_zon_ave
@@ -723,8 +744,8 @@ contains
     vor_adv_eddy_grid = vor_grid_x * u_nondiv_grid + vor_grid_y * v_nondiv_grid
     bt_vor_adv_eddy_grid = bt_vor_grid_x * bt_u_nondiv_grid + bt_vor_grid_y * bt_v_nondiv_grid
     temp_adv_eddy_grid = temp_grid_x * u_nondiv_grid + temp_grid_y * v_nondiv_grid
- 
- 
+
+
 
 
 !                   --- pressure on full and half levels ---
@@ -753,13 +774,13 @@ contains
                              ps_grid,                           sigma,        &
                               p_half,                       ln_p_half,        &
                               p_full,                       ln_p_full )
-       
+
     elseif(data_source.eq.CCM3) then
        call pressure_variables_CCM3(                                          &
                              ps_grid,                          p_half,        &
                            ln_p_half,                          p_full,        &
                            ln_p_full )
-       
+
     elseif(data_source.eq.ERA40) then
        call pressure_variables_ERA40(                                         &
                              ps_grid,                          p_half,        &
@@ -775,7 +796,7 @@ contains
                               v_grid,                         ps_grid,        &
                           dx_ps_grid,                      dy_ps_grid,        &
                          w_grid_half )
-    
+
     ! don't need num_lev+1 (w is zero there...)
     do k=1, num_lev
        w_grid_half(:,:,k) = w_grid_half(:,:,k)/ps_grid(:,:)
@@ -791,27 +812,27 @@ contains
 
 
     mont_grid =  geopot_grid + cp * temp_grid
-           
+
     do k = 1, num_lev
-       
+
        call surf_gradient(                                                    &
                 geopot_grid(:, :, k),                  dx_geopot_grid,        &
                       dy_geopot_grid )
 
-       ! note this is the x derivative of mont_grid at constant theta 
+       ! note this is the x derivative of mont_grid at constant theta
        ! or equivalently the x derivative of gz at constant pressure
        mont_x_grid(:, :, k) = dx_geopot_grid +                                &
             (rdgas * virtual_temp_grid(:, :, k)) / ps_grid * dx_ps_grid
-           
+
     enddo
 
     ! interpolate vertical velocity to full model levels
     w_grid = interpolate_half_to_full(w_grid_half)
-    
-   ! get potential temperature on full levels
-    dry_pot_temp = temp_grid * (reference_sea_level_pres/p_full)**kappa 
 
-                                                                                                                                       
+   ! get potential temperature on full levels
+    dry_pot_temp = temp_grid * (reference_sea_level_pres/p_full)**kappa
+
+
     ! calculate moist quantities
     if (moisture) then
 
@@ -847,7 +868,7 @@ contains
            theta_e = dry_pot_temp
       end where
 
-      ! theta_e_sat is the theta_e of a hypothetical saturated atmosphere with the 
+      ! theta_e_sat is the theta_e of a hypothetical saturated atmosphere with the
       ! same thermal structure
       theta_e_sat = dry_pot_temp * exp(sat_mr_grid * (1.0 + const5 * sat_mr_grid) *   &
                                        (const6 / temp_grid - const7))
@@ -860,7 +881,7 @@ contains
        theta      = dry_pot_temp
     end if
 
-   
+
     ! calculate spectra of potential temperature and pe->ke conversion
 
     pot_temp_coef_a = 0.0; pot_temp_coef_b = 0.0
@@ -878,64 +899,64 @@ contains
     bt_vor_adv_eddy_coef_a= 0.0; bt_vor_adv_eddy_coef_b= 0.0;
 
     call scalar_to_spec(    theta,                 pot_temp_coef_a,        &
-                     pot_temp_coef_b ) 
+                     pot_temp_coef_b )
 
     call scalar_to_spec(    temp_grid,                 temp_coef_a,        &
                      temp_coef_b )
 
 
-    if (moisture) then                                                         
+    if (moisture) then
        call scalar_to_spec(                                                   &
                            shum_grid,                     shum_coef_a,        &
-                           shum_coef_b ) 
+                           shum_coef_b )
        call scalar_to_spec(                                                   &
                            sat_shum_grid,             sat_shum_coef_a,        &
-                           sat_shum_coef_b ) 
+                           sat_shum_coef_b )
        call scalar_to_spec(                                                   &
                            rhum_grid,                     rhum_coef_a,        &
-                           rhum_coef_b ) 
+                           rhum_coef_b )
        call scalar_to_spec(                                                   &
                            theta_e,                       theta_e_coef_a,     &
-                           theta_e_coef_b ) 
+                           theta_e_coef_b )
     end if
 
     call scalar_to_spec(      w_grid,                        w_coef_a,        &
-                            w_coef_b ) 
+                            w_coef_b )
 
     call scalar_to_spec( vor_adv_grid,                  vor_adv_coef_a,        &
-                         vor_adv_coef_b ) 
+                         vor_adv_coef_b )
 
     call scalar_to_spec( vor_adv_eddy_grid,        vor_adv_eddy_coef_a,        &
-                         vor_adv_eddy_coef_b ) 
+                         vor_adv_eddy_coef_b )
 
     call scalar_to_spec( temp_adv_grid,                  temp_adv_coef_a,        &
-                         temp_adv_coef_b ) 
+                         temp_adv_coef_b )
 
     call scalar_to_spec( temp_adv_eddy_grid,        temp_adv_eddy_coef_a,        &
-                         temp_adv_eddy_coef_b ) 
+                         temp_adv_eddy_coef_b )
 
     call scalar_to_spec_1lev( bt_vor_adv_grid,                  bt_vor_adv_coef_a,        &
-                         bt_vor_adv_coef_b ) 
+                         bt_vor_adv_coef_b )
 
     call scalar_to_spec_1lev( bt_vor_adv_eddy_grid,        bt_vor_adv_eddy_coef_a,        &
-                         bt_vor_adv_eddy_coef_b ) 
+                         bt_vor_adv_eddy_coef_b )
 
     ! find quantities needed for Coriolis term related spectrum
 
     do k = 1, num_lev
      coriolis_param_grid(:,:,k) = 2*omega*sin_lat_xy
-     beta_grid(:,:,k)           = 2*omega*cos_lat_xy/radius 
+     beta_grid(:,:,k)           = 2*omega*cos_lat_xy/radius
     enddo
 
     ! note typo (minus sign) in Lambert 83 is corrected in Lambert 87
     coriolis_div_term_grid = coriolis_param_grid*vor_grid-beta_grid*u_grid
     coriolis_vor_term_grid = -beta_grid*v_grid-coriolis_param_grid*div_grid
 
-    call scalar_to_spec( coriolis_div_term_grid,   coriolis_div_coef_a,        & 
-                         coriolis_div_coef_b ) 
+    call scalar_to_spec( coriolis_div_term_grid,   coriolis_div_coef_a,        &
+                         coriolis_div_coef_b )
 
     call scalar_to_spec( coriolis_vor_term_grid,   coriolis_vor_coef_a,        &
-                         coriolis_vor_coef_b ) 
+                         coriolis_vor_coef_b )
 
     do k = 1, num_lev
 
@@ -945,7 +966,7 @@ contains
        t_spec(:, :, k) = t_spec(:, :, k) +                      &
             temp_coef_a(:, :, k)**2 + temp_coef_b(:, :, k)**2
 
-       if (moisture) then                                                           
+       if (moisture) then
             shum_spec(:, :, k) = shum_spec(:, :, k) +                         &
             shum_coef_a(:, :, k)**2 + shum_coef_b(:, :, k)**2
 
@@ -959,13 +980,13 @@ contains
             theta_e_coef_a(:, :, k)**2 + theta_e_coef_b(:, :, k)**2
        end if
 
-       ! see Lambert 1984 and Arakawa and Suarez 1983 
+       ! see Lambert 1984 and Arakawa and Suarez 1983
 
         conv_spec(:, :, k) = conv_spec(:, :, k) +                              &
             pot_temp_coef_a(:, :, k) * w_coef_a(:, :, k) +                    &
-            pot_temp_coef_b(:, :, k) * w_coef_b(:, :, k) 
+            pot_temp_coef_b(:, :, k) * w_coef_b(:, :, k)
 
-       ! Non-linear ineraction term in vorticity equation 
+       ! Non-linear ineraction term in vorticity equation
        ! Corresponds to -4*Jn after sum over m in Boer and Shepherd 1983
        non_lin_spec(:, :, k) = non_lin_spec(:, :, k) +                        &
             2.0*(vor_coef_a(:, :, k) * vor_adv_coef_a(:, :, k) +              &
@@ -990,7 +1011,7 @@ contains
 
 
 
-       ! Term in spectral energy budget related to the beta effect 
+       ! Term in spectral energy budget related to the beta effect
        ! (see Lambert 1984 Atmos.-Ocean)
        coriolis_spec(:, :, k) = coriolis_spec(:, :, k) +                      &
             2.0*(div_coef_a(:, :, k) * coriolis_div_coef_a(:, :, k) +         &
@@ -1000,7 +1021,7 @@ contains
 
     end do
 
-    ! Non-linear ineraction term in vorticity equation 
+    ! Non-linear ineraction term in vorticity equation
     ! Corresponds to -4*Jn after sum over m in Boer and Shepherd 1983
     bt_non_lin_spec(:, :) = bt_non_lin_spec(:, :) +                        &
          2.0*(bt_vor_coef_a(:, :) * bt_vor_adv_coef_a(:, :) +              &
@@ -1009,28 +1030,28 @@ contains
     ! (we find this for all modes including m=0 modes)
     bt_non_lin_eddy_spec(:, :) = bt_non_lin_eddy_spec(:, :) +              &
          2.0*(bt_vor_coef_a(:, :) * bt_vor_adv_eddy_coef_a(:, :) +         &
-              bt_vor_coef_b(:, :) * bt_vor_adv_eddy_coef_b(:, :))        
-    ! compute local streamfunction (the average of which would give the 
+              bt_vor_coef_b(:, :) * bt_vor_adv_eddy_coef_b(:, :))
+    ! compute local streamfunction (the average of which would give the
     ! Eulerian mean streamfunction)
-   
+
     sfctn_grid = 0.
     do k=num_lev, 1, -1
        sfctn_grid(:, :, k) = sfctn_grid(:, :, k+1) +                          &
-             vcos_grid(:, :, k) * (p_half(:, :, k+1) - p_half(:, :, k)) 
+             vcos_grid(:, :, k) * (p_half(:, :, k+1) - p_half(:, :, k))
     enddo
-    sfctn_grid = 2. * pi * radius / grav * sfctn_grid 
+    sfctn_grid = 2. * pi * radius / grav * sfctn_grid
 
   end subroutine get_grid_fields
 
 ! #############################################################################
-  
+
   subroutine surf_gradient(grid, dx_grid, dy_grid)
 
     ! uses spherepack routines to calculate the gradient for a single level
-    
+
     real,    intent(in),  dimension(:,:) :: grid
     real,    intent(out), dimension(:,:) :: dx_grid, dy_grid
-    
+
 !                          --- local variables ---
     real, dimension(num_lon, num_lat) :: coef_a, coef_b
     real, dimension(num_lat, num_lon) :: dx_grid_trans, dy_grid_trans
@@ -1047,7 +1068,7 @@ contains
                               lshags,                            work,        &
                                lwork,                          ierror )
        if(ierror.ne.0) write(*,*) 'after shags, ierror:',ierror
-   
+
        call gradgs(          num_lat,                         num_lon,        &
                                    0,                               1,        &
                        dy_grid_trans,                   dx_grid_trans,        &
@@ -1069,8 +1090,8 @@ contains
                              lshaes,                            work,        &
                               lwork,                          ierror )
        if(ierror.ne.0) write(*,*) 'after shaes, ierror:',ierror
-      
-      
+
+
        call grades(          num_lat,                         num_lon,        &
                                    0,                               1,        &
                        dy_grid_trans,                   dx_grid_trans,        &
@@ -1081,7 +1102,7 @@ contains
                                 work,                           lwork,        &
                               ierror )
       if(ierror.ne.0) write(*,*) 'after grades, ierror:',ierror
-      
+
    endif
 
    dx_grid = transpose(dx_grid_trans)/radius
@@ -1114,7 +1135,7 @@ contains
       fourier(:,:) = transpose(grid(:,:,k))
       call hrfftf(num_lat, num_lon, fourier, num_lat, wsave, work)
       fourier = fourier / num_lon
-      lat_weight = (p_half_zon(:, k+1) - p_half_zon(:, k)) 
+      lat_weight = (p_half_zon(:, k+1) - p_half_zon(:, k))
       do j=1,num_lat
          zon_spectrum(j, 0) = zon_spectrum(j, 0) +                            &
               2.0*lat_weight(j)*(fourier(j,1)**2)
@@ -1124,7 +1145,7 @@ contains
          enddo
       enddo
    enddo
-   
+
  end function zonal_spectrum_grid
 
 !##############################################################################
@@ -1152,11 +1173,11 @@ contains
    do k=1,num_lev
       fourier1(:,:) = transpose(grid1(:,:,k))
       fourier2(:,:) = transpose(grid2(:,:,k))
-      call hrfftf(num_lat, num_lon, fourier1, num_lat, wsave, work) 
+      call hrfftf(num_lat, num_lon, fourier1, num_lat, wsave, work)
       call hrfftf(num_lat, num_lon, fourier2, num_lat, wsave, work)
       fourier1 = fourier1 / num_lon
       fourier2 = fourier2 / num_lon
-      lat_weight = (p_half_zon(:, k+1) - p_half_zon(:, k)) 
+      lat_weight = (p_half_zon(:, k+1) - p_half_zon(:, k))
       do j=1,num_lat
          ! More conventional to multiply m=0 mode by 1 and m>0 modes by 2
          ! to account for negative m modes. Multiply all by 2 for consistency
@@ -1170,7 +1191,7 @@ contains
          enddo
       enddo
    enddo
-   
+
  end function zonal_cospectrum_grid
 
 !##############################################################################
@@ -1223,17 +1244,17 @@ subroutine streamfunction_coef(                                               &
                        bt_vor_coef_b  )
 
     ! generates spectral coefficients for streamfunction
-    
-!                            --- input arguments ---                           
+
+!                            --- input arguments ---
 
     real, intent(in), dimension(:) ::                                         &
-         mult                  ! 
+         mult                  !
 
     real, intent(in), dimension(:, :, :) ::                                   &
          in_coef_a,        &   ! input spectral (cosine) coefficients
          in_coef_b             ! input spectral (sine) coefficients
 
-!                            --- inout arguments ---                         
+!                            --- inout arguments ---
 
     real, intent(inout), dimension(:, :) ::                                   &
          bt_vor_coef_a,  &     ! barotropic vorticity a coefficients
@@ -1241,15 +1262,15 @@ subroutine streamfunction_coef(                                               &
          bc_sfctn_spec,    &   ! baroclinic streamfunction spectrum
          bt_sfctn_spec         ! barotropic streamfunction spectrum
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(out), dimension(:, :) ::                                     &
          bt_sfctn_grid         ! barotropic streamfunction
-    
+
     real, intent(out), dimension(:, :, :) ::                                  &
          hor_sfctn_grid        ! horizontal streamfunction
 
-!                            --- local variables ---  
+!                            --- local variables ---
 
     integer :: n, m            !  Legendre and Fourier indices, respectively
 
@@ -1271,7 +1292,7 @@ subroutine streamfunction_coef(                                               &
          bt_sfctn_grid_trans,& ! transpose of the barotropic streamfunction
          hor_sfctn_grid_trans  ! transpose of horizontal streamfunction
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
     sfctn_coef_a_avg = 0.0 ; sfctn_coef_b_avg = 0.0
 
@@ -1284,7 +1305,7 @@ subroutine streamfunction_coef(                                               &
           sfctn_coef_a(1, n) = mult(n)*in_coef_a(1, n, k)
           sfctn_coef_b(1, n) = mult(n)*in_coef_b(1, n, k)
        enddo
-    
+
        ! m > 0 coefficients
 
        do m=2, num_fourier+1
@@ -1297,12 +1318,12 @@ subroutine streamfunction_coef(                                               &
        ! spectral coefficients for baroclinic component
        bc_sfctn_spec = bc_sfctn_spec +                                        &
             weight(k) * (sfctn_coef_a**2 + sfctn_coef_b**2)
-       
+
        ! weighted vertical average of streamfunction coefficients
        sfctn_coef_a_avg = sfctn_coef_a_avg + weight(k) * sfctn_coef_a
        sfctn_coef_b_avg = sfctn_coef_b_avg + weight(k) * sfctn_coef_b
 
-       ! spherepack needs spectral arrays dimensioned (num_lon, num_lat) 
+       ! spherepack needs spectral arrays dimensioned (num_lon, num_lat)
        hor_sfctn_coef_a = 0.0 ; hor_sfctn_coef_b = 0.0
        hor_sfctn_coef_a(1:num_fourier+1,1:num_fourier+1) = sfctn_coef_a
        hor_sfctn_coef_b(1:num_fourier+1,1:num_fourier+1) = sfctn_coef_b
@@ -1377,7 +1398,7 @@ subroutine streamfunction_coef(                                               &
        bt_vor_coef_a(1, n) = 1./mult(n)*bt_sfctn_coef_a(1, n)
        bt_vor_coef_b(1, n) = 1./mult(n)*bt_sfctn_coef_b(1, n)
     enddo
-    
+
        ! m > 0 coefficients
 
     do m=2, num_fourier+1
@@ -1390,34 +1411,34 @@ subroutine streamfunction_coef(                                               &
 
   end subroutine streamfunction_coef
 
-! added by fridoo: below, the one level routines (1lev) are only used for 
+! added by fridoo: below, the one level routines (1lev) are only used for
 ! the computation of the spectra of the non-linear interactions of the
-! barotropic component of the flow. 
+! barotropic component of the flow.
 !##############################################################################
 
   subroutine scalar_to_spec(                                                  &
                             one_grid,                      one_coef_a,        &
                           one_coef_b)
 
-!                            --- input arguments ---                           
+!                            --- input arguments ---
 
     real, intent(in), dimension(:, :, :) ::                                   &
-         one_grid              ! grid field 
+         one_grid              ! grid field
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(in), dimension(:, :, :) ::                                   &
          one_coef_a,       &   ! spectral coefficient 'a' for grid field
          one_coef_b            ! spectral coefficient 'b' for grid field
 
-!                            --- local variables ---                         
+!                            --- local variables ---
 
     integer :: k               ! level counter
 
     real, dimension(num_lat, num_lon) ::                                      &
      one_grid_trans            ! transpose of grid field
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
 
 
@@ -1439,7 +1460,7 @@ subroutine streamfunction_coef(                                               &
                               lshags,                            work,        &
                                lwork,                          ierror )
           if(ierror.ne.0) write(*,*) 'after shags, ierror:',ierror
-             
+
        else
           call shaes(        num_lat,                         num_lon,        &
                                    0,                               1,        &
@@ -1464,29 +1485,29 @@ subroutine streamfunction_coef(                                               &
                             one_grid,                      one_coef_a,        &
                           one_coef_b)
 
-!                            --- input arguments ---                           
+!                            --- input arguments ---
 
     real, intent(in), dimension(:, :) ::                                   &
-         one_grid              ! grid field 
+         one_grid              ! grid field
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(in), dimension(:, :) ::                                   &
          one_coef_a,       &   ! spectral coefficient 'a' for grid field
          one_coef_b            ! spectral coefficient 'b' for grid field
 
-!                            --- local variables ---                         
+!                            --- local variables ---
 
     integer :: k               ! level counter
 
     real, dimension(num_lat, num_lon) ::                                      &
      one_grid_trans            ! transpose of grid field
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
 
 
-    
+
 
    ! convert from geophysical to math coordinates (spherepack)
        call geo2maths(             0,                         num_lon,        &
@@ -1504,7 +1525,7 @@ subroutine streamfunction_coef(                                               &
                               lshags,                            work,        &
                                lwork,                          ierror )
           if(ierror.ne.0) write(*,*) 'after shags, ierror:',ierror
-             
+
        else
           call shaes(        num_lat,                         num_lon,        &
                                    0,                               1,        &
@@ -1517,7 +1538,7 @@ subroutine streamfunction_coef(                                               &
           if(ierror.ne.0) write(*,*) 'after shegs, ierror:',ierror
 
        endif
-    
+
 
   end subroutine scalar_to_spec_1lev
 
@@ -1527,14 +1548,14 @@ subroutine streamfunction_coef(                                               &
                           one_coef_a,                      one_coef_b,        &
                           two_coef_a,                      two_coef_b )
 
-!                            --- input arguments ---                           
+!                            --- input arguments ---
 
     real, intent(in), dimension(:,:,:) ::                                     &
          one_grid,         &   ! grid field one
          two_grid              ! grid field two
 
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(in), dimension(:,:,:) ::                                     &
          one_coef_a,       &   ! spectral coefficient 'a' for field one
@@ -1543,7 +1564,7 @@ subroutine streamfunction_coef(                                               &
          two_coef_b            ! spectral coefficient 'b' for field two
 
 
-!                            --- local variables ---                         
+!                            --- local variables ---
 
     integer :: k               ! level counter
 
@@ -1551,7 +1572,7 @@ subroutine streamfunction_coef(                                               &
          one_grid_trans,   &   ! transpose of grid field one
          two_grid_trans        ! transpose of grid field two
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
 
     do k = 1, num_lev
@@ -1575,7 +1596,7 @@ subroutine streamfunction_coef(                                               &
                              num_lon,                         num_lat,        &
                               wvhags,                          lvhags,        &
                                 work,                           lwork,        &
-                              ierror )      
+                              ierror )
           if(ierror.ne.0) write(*,*) 'after vhags, ierror:',ierror
        else
           call vhaes(        num_lat,                         num_lon,        &
@@ -1602,14 +1623,14 @@ subroutine streamfunction_coef(                                               &
                           one_coef_a,                      one_coef_b,        &
                           two_coef_a,                      two_coef_b )
 
-!                            --- input arguments ---                           
+!                            --- input arguments ---
 
     real, intent(in), dimension(:,:) ::                                     &
          one_grid,         &   ! grid field one
          two_grid              ! grid field two
 
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(in), dimension(:,:) ::                                     &
          one_coef_a,       &   ! spectral coefficient 'a' for field one
@@ -1618,7 +1639,7 @@ subroutine streamfunction_coef(                                               &
          two_coef_b            ! spectral coefficient 'b' for field two
 
 
-!                            --- local variables ---                         
+!                            --- local variables ---
 
 
 
@@ -1626,7 +1647,7 @@ subroutine streamfunction_coef(                                               &
          one_grid_trans,   &   ! transpose of grid field one
          two_grid_trans        ! transpose of grid field two
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
 
 
@@ -1650,7 +1671,7 @@ subroutine streamfunction_coef(                                               &
                              num_lon,                         num_lat,        &
                               wvhags,                          lvhags,        &
                                 work,                           lwork,        &
-                              ierror )      
+                              ierror )
           if(ierror.ne.0) write(*,*) 'after vhags, ierror:',ierror
        else
           call vhaes(        num_lat,                         num_lon,        &
@@ -1675,7 +1696,7 @@ subroutine streamfunction_coef(                                               &
                           div_coef_a,                      div_coef_b,        &
                               u_grid,                          v_grid )
 
-!                            --- input arguments ---                           
+!                            --- input arguments ---
 
     real, intent(in), dimension(:, :, :) ::                                   &
          vor_coef_a,       &   ! vorticity coefficient a
@@ -1683,14 +1704,14 @@ subroutine streamfunction_coef(                                               &
          div_coef_a,       &   ! divergence coefficient a
          div_coef_b            ! divergence coefficient b
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(out), dimension(:, :, :) ::                                  &
          u_grid,           &   ! gridpoint zonal wind
          v_grid                ! gridpoint meridional wind
-  
 
-!                            --- local variables ---                         
+
+!                            --- local variables ---
 
     integer :: k               ! level counter
 
@@ -1698,13 +1719,13 @@ subroutine streamfunction_coef(                                               &
          u_grid_trans,     &   ! transposed zonal wind
          v_grid_trans          ! transposed meridional wind
 
-    real :: dum1, dum2         ! dummy variables required by spherepack 
+    real :: dum1, dum2         ! dummy variables required by spherepack
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
     do k = 1, num_lev
 
-       if(is_gaussian) then   
+       if(is_gaussian) then
           call idvtgs(       num_lat,                         num_lon,        &
                                    0,                               1,        &
                         v_grid_trans,                    u_grid_trans,        &
@@ -1751,7 +1772,7 @@ subroutine streamfunction_coef(                                               &
                           div_coef_a,                      div_coef_b,        &
                               u_grid,                          v_grid )
 
-!                            --- input arguments ---                           
+!                            --- input arguments ---
 
     real, intent(in), dimension(:, :) ::                                   &
          vor_coef_a,       &   ! vorticity coefficient a
@@ -1759,26 +1780,26 @@ subroutine streamfunction_coef(                                               &
          div_coef_a,       &   ! divergence coefficient a
          div_coef_b            ! divergence coefficient b
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(out), dimension(:, :) ::                                  &
          u_grid,           &   ! gridpoint zonal wind
          v_grid                ! gridpoint meridional wind
-  
 
-!                            --- local variables ---                         
+
+!                            --- local variables ---
 
     real, dimension(num_lat, num_lon) ::                                      &
          u_grid_trans,     &   ! transposed zonal wind
          v_grid_trans          ! transposed meridional wind
 
-    real :: dum1, dum2         ! dummy variables required by spherepack 
+    real :: dum1, dum2         ! dummy variables required by spherepack
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
 
 
-       if(is_gaussian) then   
+       if(is_gaussian) then
           call idvtgs(       num_lat,                         num_lon,        &
                                    0,                               1,        &
                         v_grid_trans,                    u_grid_trans,        &
@@ -1825,7 +1846,7 @@ subroutine streamfunction_coef(                                               &
                             v_coef_a,                        v_coef_b,        &
                             vor_grid,                        div_grid )
 
-!                            --- input arguments ---                           
+!                            --- input arguments ---
 
     real, intent(in), dimension(:, :, :) ::                                   &
          u_coef_a,         &   ! zonal wind coefficient a
@@ -1833,13 +1854,13 @@ subroutine streamfunction_coef(                                               &
          v_coef_a,         &   ! meridional wind coefficient a
          v_coef_b              ! meridional wind coefficient b
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(out), dimension(:, :, :) ::                                  &
          vor_grid,         &   ! gridpoint vorticity
          div_grid              ! gridpoint divergence
-  
-!                            --- local variables ---                         
+
+!                            --- local variables ---
 
     integer :: k               ! level counter
 
@@ -1847,11 +1868,11 @@ subroutine streamfunction_coef(                                               &
          vor_grid_trans,   &   ! transposed vorticity
          div_grid_trans        ! transposed divergence
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
     do k = 1, num_lev
 
-       if(is_gaussian) then   
+       if(is_gaussian) then
           call vrtgs(        num_lat,                         num_lon,        &
                                    0,                               1,        &
                       vor_grid_trans,                         num_lat,        &
@@ -1894,7 +1915,7 @@ subroutine streamfunction_coef(                                               &
                    v_coef_b(:, :, k),                         num_lon,        &
                              num_lat,                          wshses,        &
                               lshses,                            work,        &
-                               lwork,                          ierror ) 
+                               lwork,                          ierror )
           if(ierror.ne.0) write(*,*) 'after dives, ierror:',ierror
        endif
 
@@ -1916,7 +1937,7 @@ subroutine streamfunction_coef(                                               &
                             v_coef_a,                        v_coef_b,        &
                             vor_grid,                        div_grid )
 
-!                            --- input arguments ---                           
+!                            --- input arguments ---
 
     real, intent(in), dimension(:, :) ::                                   &
          u_coef_a,         &   ! zonal wind coefficient a
@@ -1924,13 +1945,13 @@ subroutine streamfunction_coef(                                               &
          v_coef_a,         &   ! meridional wind coefficient a
          v_coef_b              ! meridional wind coefficient b
 
-!                            --- output arguments ---                         
+!                            --- output arguments ---
 
     real, intent(out), dimension(:, :) ::                                  &
          vor_grid,         &   ! gridpoint vorticity
          div_grid              ! gridpoint divergence
-  
-!                            --- local variables ---                         
+
+!                            --- local variables ---
 
 
 
@@ -1938,11 +1959,11 @@ subroutine streamfunction_coef(                                               &
          vor_grid_trans,   &   ! transposed vorticity
          div_grid_trans        ! transposed divergence
 
-!                            --- executable code --- 
+!                            --- executable code ---
 
- 
 
-       if(is_gaussian) then   
+
+       if(is_gaussian) then
           call vrtgs(        num_lat,                         num_lon,        &
                                    0,                               1,        &
                       vor_grid_trans,                         num_lat,        &
@@ -1985,7 +2006,7 @@ subroutine streamfunction_coef(                                               &
                    v_coef_b(:, :),                         num_lon,        &
                              num_lat,                          wshses,        &
                               lshses,                            work,        &
-                               lwork,                          ierror ) 
+                               lwork,                          ierror )
           if(ierror.ne.0) write(*,*) 'after dives, ierror:',ierror
        endif
 
@@ -1997,7 +2018,7 @@ subroutine streamfunction_coef(                                               &
        call math2geos(             0,                         num_lat,        &
                              num_lon,                  vor_grid_trans,        &
                    vor_grid(:, :),                            work )
-    
+
 
   end subroutine vor_div_from_u_v_1lev
 

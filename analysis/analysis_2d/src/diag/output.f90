@@ -8,7 +8,7 @@ module output_mod
 implicit none
 private
 
-public :: create_output_file, write_variables, close_output_file 
+public :: create_output_file, write_variables, close_output_file
 
   integer, parameter ::                                                       &
        nvars = 1002,       &  ! number of output fields (max)
@@ -25,7 +25,7 @@ public :: create_output_file, write_variables, close_output_file
        latDimID,           &  ! latitude file ID
        sigmaDimID,         &  ! sigma dimension ID
        thetaDimID,         &  ! theta dimension ID
-       zon_wavenDimID,     &  ! zonal wavenumber dimension ID 
+       zon_wavenDimID,     &  ! zonal wavenumber dimension ID
        legendreDimID,      &  ! legendre dimension ID
        binDimID,           &  ! pdf bin dimension ID
        timeDimID,          &  ! time dimension ID
@@ -36,7 +36,7 @@ public :: create_output_file, write_variables, close_output_file
        zon_wavenVarID,     &  ! zonal wavenumber variable ID
        legendreVarID,      &  ! legendre variable ID
        binVarID,           &  ! pdf bin variable ID
-       statVarID(nvars)       ! array of field variable IDs 
+       statVarID(nvars)       ! array of field variable IDs
 
 contains
 ! #############################################################################
@@ -45,17 +45,17 @@ contains
                              num_lat,                         num_lev )
 
 ! creates output file and axis variables
-    
+
 !----------------------------- input arguments --------------------------------
-    
+
     integer, intent(in) :: num_lat, num_lev
-    
+
 !----------------------------- local variables --------------------------------
 
 !----------------------------- executable code --------------------------------
 
 
-    
+
 
     if(.not. byteSizesOK()) then
        stop 'open_and_initialize: Compiler does not appear to support required kinds of variables'
@@ -69,7 +69,7 @@ contains
     ! global attributes
     call check(nf90_put_att(ncFileID, nf90_global, "title",                   &
          "OfflineDiag Analyses") )
-       
+
        ! global attributes
     call check(nf90_put_att(ncFileID, nf90_global, "title",                   &
          "OfflineDiag Analyses") )
@@ -80,12 +80,12 @@ contains
     ! latitude
     call check(NF90_DEF_DIM(ncFileID, "lat", num_lat, latDimID) )
     call check(nf90_def_var(ncFileID, "lat", nf90_double, latDimID,           &
-         latVarID) )  
+         latVarID) )
     call check(nf90_put_att(ncFileID, latVarID,                               &
          "long_name", "latitude") )
     call check(nf90_put_att(ncFileID, latVarID,                               &
          "units", "degree") )
-       
+
     ! sigma level
     call check(NF90_DEF_DIM(ncFileID, "sigma", num_lev, sigmaDimID) )
     call check(nf90_def_var(ncFileID, "sigma", nf90_double, sigmaDimID,       &
@@ -94,7 +94,7 @@ contains
          "long_name", "sigma level") )
     call check(nf90_put_att(ncFileID, sigmaVarID,                             &
          "units", "none") )
-    
+
     ! potential temperature
     call check(NF90_DEF_DIM(ncFileID, "theta", MaxIsentrLev, thetaDimID) )
     call check(nf90_def_var(ncFileID, "theta", nf90_double, thetaDimID, &
@@ -103,7 +103,7 @@ contains
          "long_name", "potential temperature level") )
     call check(nf90_put_att(ncFileID, thetaVarID,                             &
          "units", "Kelvin") )
-    
+
     ! zonal wavenumber
     call check(nf90_def_dim(ncFileID, "zon_waven", num_fourier+1,             &
          zon_wavenDimID) )
@@ -113,7 +113,7 @@ contains
          "long_name", "zonal wavenumber") )
     call check(nf90_put_att(ncFileID, zon_wavenVarID,                         &
          "units", "none") )
-       
+
     ! legendre
     call check(nf90_def_dim(ncFileID, "legendre", num_fourier+1,              &
          legendreDimID) )
@@ -132,20 +132,20 @@ contains
          "long_name", "relative humidity bin") )
     call check(nf90_put_att(ncFileID, binVarID,                               &
          "units", "none") )
-       
+
     ! time
     call check(NF90_DEF_DIM(ncFileID, "times", 1, timeDimID) )
     call check(nf90_def_var(ncFileID, "times", nf90_double, timeDimID,        &
-         timeVarID) )  
+         timeVarID) )
     call check(nf90_put_att(ncFileID, timeVarID,                              &
          "long_name", "number of instants") )
-       
+
     call initialize_variables
 
-      
-    
+
+
      end subroutine create_output_file
-    
+
 ! #############################################################################
 
      subroutine initialize_variables
@@ -153,7 +153,7 @@ contains
     ! Define variables
     ! ----------------
 
-      
+
     call variable_init("p",                                                   &
          "Pressure on Sigma Levels",                                          &
          "Pa",                                                                &
@@ -179,13 +179,13 @@ contains
          statVarID(4))
 
     call variable_init("u",                                                   &
-         "Zonal Wind",                                                        & 
+         "Zonal Wind",                                                        &
          "m/s",                                                               &
          sigma_switch,                                                        &
          statVarID(5))
 
     call variable_init("u_var",                                               &
-         "Zonal Wind Variance",                                               &
+         "Zonal Wind Eddy Variance",                                          &
          "m.m/s/s",                                                           &
          sigma_switch,                                                        &
          statVarID(6))
@@ -233,13 +233,13 @@ contains
          statVarID(13))
 
     call variable_init("v_var",                                               &
-         "Meridional Wind Variance",                                          &
+         "Meridional Wind Eddy Variance",                                     &
          "m.m/s/s",                                                           &
          sigma_switch,                                                        &
          statVarID(14))
 
     call variable_init("v_barotr_var",                                        &
-         "Barotropic Meridional Wind Variance",                               & 
+         "Barotropic Meridional Wind Variance",                               &
          "m.m/s/s",                                                           &
          surface_switch,                                                      &
          statVarID(15))
@@ -257,7 +257,7 @@ contains
          statVarID(17))
 
     call variable_init("w_var",                                               &
-         "Vertical Wind Variance",                                            &
+         "Vertical Wind eddy Variance",                                       &
          "1/s/s",                                                             &
          sigma_switch,                                                        &
          statVarID(18))
@@ -400,7 +400,7 @@ contains
          "K.m/s",                                                             &
          sigma_switch,                                                        &
          statVarID(35))
-    
+
     call variable_init("pot_temp_vrtcl_flux",                                 &
          "Vertical Potential Temperature_Flux",                               &
          "K/s",                                                               &
@@ -460,7 +460,7 @@ contains
             "kg/kg",                                                          &
             sigma_switch,                                                     &
             statVarID(44))
-       
+
 
        call variable_init("shum_var",                                         &
             "Specific Humidity Variance",                                     &
@@ -562,7 +562,7 @@ contains
             sigma_switch,                                                     &
             statVarID(58))
 
-       call variable_init("rhum_psd",                                         & 
+       call variable_init("rhum_psd",                                         &
             "Relative Humidity Horizontal Power Spectral Density",            &
             "none",                                                           &
             spectra_switch_3d,                                                &
@@ -573,19 +573,19 @@ contains
             "none",                                                           &
             pdf_switch,                                                       &
             statVarID(60))
-       
+
        call variable_init("pot_temp_eqv",                                     &
             "Equivalent Potential Temperature",                               &
             "K",                                                              &
             sigma_switch,                                                     &
             statVarID(61))
-   
+
        call variable_init("pot_temp_eqv_var",                                 &
             "Equivalent Potential Temperature Variance",                      &
             "K.K",                                                            &
             sigma_switch,                                                     &
             statVarID(62))
-   
+
 
        call variable_init("pot_temp_eqv_mrdnl_flux",                          &
             "Meridional Equivalent Potential Temperature Flux",               &
@@ -610,13 +610,13 @@ contains
             "K/s",                                                            &
             sigma_switch,                                                     &
             statVarID(66))
-   
+
        call variable_init("pot_temp_eqv_mrdnl_deriv",                         &
             "Meridional Equivalent Potential Temperature Gradient",           &
             "K/m",                                                            &
             sigma_switch,                                                     &
             statVarID(67))
-   
+
        call variable_init("pot_temp_eqv_vrtcl_deriv",                         &
             "Vertical Equivalent Potential Temperature Gradient",             &
             "K/Pa",                                                           &
@@ -695,7 +695,7 @@ contains
              "W/m/m",                                                         &
              surface_switch,                                                  &
              statVarID(80))
- 
+
        call variable_init("sw_flux_toa",                                      &
             "Top-of-Atmosphere Shortwave Radiation",                          &
             "W/m/m",                                                          &
@@ -766,7 +766,7 @@ contains
             "dens.m.m/s/s",                                                      &
             theta_switch,                                                        &
             statVarID(107))
- 
+
        call variable_init("v_isent",                                             &
             "Meridional Wind",                                                   &
             "dens.m/s",                                                          &
@@ -844,7 +844,44 @@ contains
             "ISU",                                                                    &
             theta_switch,                                                             &
             statVarID(128))
- 
+
+
+     call variable_init("v_vrtcl_flux",                                        &
+          "Vertical Meridional Wind Flux",                                     &
+          "m/s/s",                                                             &
+          sigma_switch,                                                        &
+          statVarID(129))
+     call variable_init("v_eddy_vrtcl_flux",                                   &
+          "Vertical Eddy Meridional Wind Flux",                                &
+          "m/s/s",                                                             &
+          sigma_switch,                                                        &
+          statVarID(130))
+     call variable_init("vorticity",                                           &
+          "Vorticity",                                                         &
+          "1/s",                                                               &
+          sigma_switch,                                                        &
+          statVarID(131))
+     call variable_init("divergence",                                          &
+          "Divergence",                                                        &
+          "1/s",                                                               &
+          sigma_switch,                                                        &
+          statVarID(132))
+     call variable_init("z_mrdnl_deriv",                                       &
+          "Geopotential Height meridional derivative",                         &
+          "m/m",                                                               &
+          sigma_switch,                                                        &
+          statVarID(133))
+     call variable_init("u_quad_drag_tend",                                    &
+          "Zonal wind tendency due to quadratic drag",                         &
+          "m/s/s",                                                             &
+          sigma_switch,                                                        &
+          statVarID(134))
+     call variable_init("v_quad_drag_tend",                                    &
+          "Meridional wind tendency due to quadratic drag",                    &
+          "m/s/s",                                                             &
+          sigma_switch,                                                        &
+          statVarID(135))
+
 
         if(moisture) then
            call variable_init("shum_isent",                                           &
@@ -890,8 +927,8 @@ contains
                 "dens.kg/kg.m/s",                                                     &
                 theta_switch,                                                         &
                 statVarID(126))
-        endif  
-    
+        endif
+
     endif
 
      ! added by fridooo sept 2012
@@ -901,13 +938,13 @@ contains
          "m",                                                               &
          surface_switch,                                                      &
          statVarID(301))
- 
+
        call variable_init("bucket_conv_depth",                                     &
          "bucket depth variation induced by convection",    &
          "m/s",                                                               &
          surface_switch,                                                      &
          statVarID(302))
- 
+
        call variable_init("bucket_cond_depth",                                     &
          "bucket depth variation induced by condensation",    &
          "m/s",                                                               &
@@ -938,7 +975,7 @@ contains
     call variable_init("spec_barotropic",                                             &
          "spectral coefficients of the barotropic streamfunction",                    &
          "m^4/s^2",                                                                      &
-         spectra_switch,                                                              & 
+         spectra_switch,                                                              &
          statVarID(141))
 
     call variable_init("non_lin_spec",                                        &
@@ -963,7 +1000,7 @@ contains
          "spectrum related to beta effect",                                   &
          "1/s/s/s",                                                           &
          spectra_switch_3d,                                                   &
-         statVarID(145)) 
+         statVarID(145))
 
     call variable_init("bt_non_lin_spec",                                     &
          "spectrum of non-linear interaction, barotropic component",          &
@@ -998,14 +1035,14 @@ contains
 
 
     call check(nf90_enddef(ncfileID))
- 
-    
+
+
   end subroutine initialize_variables
-  
+
 ! #############################################################################
 
   subroutine variable_init(name, long_name, units, switch, VarID)
-  
+
     character(len=*), intent(in) :: name, long_name, units
     integer, intent(in) :: switch
     integer, intent(out) :: VarID
@@ -1032,7 +1069,7 @@ contains
           call check(nf90_def_var(ncFileID, trim(name), nf90_double,          &
                (/latDimID, sigmaDimID, binDimID /), VarID ) )
        endif
-       
+
        call check(nf90_put_att(ncFileID, VarID,                               &
             "long_name", trim(long_name)))
        call check(nf90_put_att(ncFileID, VarID,                               &
@@ -1051,7 +1088,7 @@ contains
          num_lat,          &   !
          num_fourier,      &   !
          num_lev               !
-    
+
     real, intent(in) ::                                                       &
          num_times
 
@@ -1064,7 +1101,7 @@ contains
 
 !------------------          write coordinate axes         --------------------
 
-    
+
     ! latitudes
     call check(nf90_put_var(ncFileID, latVarID, deg_lat,                      &
          start = (/ 1 /), count = (/ num_lat /) ) )
@@ -1105,7 +1142,7 @@ contains
 
     call check(nf90_put_var(ncFileID, statVarID(5), u_avg,                                    &
          start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
-        
+
     call check(nf90_put_var(ncFileID, statVarID(6), u_var_avg,                               &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
@@ -1129,7 +1166,7 @@ contains
 
 
     call check(nf90_put_var(ncFileID, statVarID(13), v_avg,                                   &
-         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) )) 
+         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
     call check(nf90_put_var(ncFileID, statVarID(14), v_var_avg,                               &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
@@ -1139,7 +1176,7 @@ contains
 
     call check(nf90_put_var(ncFileID, statVarID(16), vcos_zon_spec_barotr,                    &
             start = (/ 1, 1 /), count = (/ num_lat, num_fourier/) ))
-    
+
     call check(nf90_put_var(ncFileID, statVarID(17), w_avg,                                   &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
@@ -1149,7 +1186,7 @@ contains
     call check(nf90_put_var(ncFileID, statVarID(19), sfctn_avg,                               &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
-    call check(nf90_put_var(ncFileID, statVarID(20), TEM_res_circ,                            & 
+    call check(nf90_put_var(ncFileID, statVarID(20), TEM_res_circ,                            &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
     call check(nf90_put_var(ncFileID, statVarID(21), MTEM_res_circ,                           &
@@ -1161,7 +1198,7 @@ contains
 
     call check(nf90_put_var(ncFileID, statVarID(23), temp_var_avg,                            &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
-    
+
     call check(nf90_put_var(ncFileID, statVarID(24), mrdnl_temp_flux_avg,                     &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
@@ -1208,7 +1245,7 @@ contains
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
     call check(nf90_put_var(ncFileID, statVarID(35), mrdnl_pot_temp_flux_avg,                 &
-         start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
+         start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
 
     call check(nf90_put_var(ncFileID, statVarID(36), vrtcl_pot_temp_flux_avg,                 &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
@@ -1220,10 +1257,10 @@ contains
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
     call check(nf90_put_var(ncFileID, statVarID(39), d_dy_pot_temp_avg,                       &
-         start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
+         start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
 
     call check(nf90_put_var(ncFileID, statVarID(40), d_dp_pot_temp_avg,                       &
-         start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
+         start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
 
     call check(nf90_put_var(ncFileID, statVarID(41), pot_temp_spec,                           &
             start = (/ 1, 1, 1 /), count = (/ num_fourier+1, num_fourier+1, num_lev /) ))
@@ -1233,7 +1270,28 @@ contains
 
     call check(nf90_put_var(ncFileID, statVarID(43), eape2eke_conv_spec,                      &
             start = (/ 1, 1, 1 /), count = (/ num_fourier+1, num_fourier+1, num_lev /) ))
-   
+
+    call check(nf90_put_var(ncFileID, statVarID(129), vrtcl_v_flux_avg, &
+         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
+
+    call check(nf90_put_var(ncFileID, statVarID(130), vrtcl_eddy_v_flux_avg, &
+         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
+
+    call check(nf90_put_var(ncFileID, statVarID(131), vort_avg, &
+         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
+
+    call check(nf90_put_var(ncFileID, statVarID(132), div_avg, &
+         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
+
+    call check(nf90_put_var(ncFileID, statVarID(133), mrdnl_z_deriv_avg, &
+         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
+
+    call check(nf90_put_var(ncFileID, statVarID(134), dt_u_drag_avg, &
+         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
+
+    call check(nf90_put_var(ncFileID, statVarID(135), dt_u_drag_avg, &
+         start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
+
     if(moisture) then
 
        call check(nf90_put_var(ncFileID, statVarID(3), ts_avg,                                 &
@@ -1241,9 +1299,9 @@ contains
 
        call check(nf90_put_var(ncFileID, statVarID(44), shum_avg,                             &
             start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
-       
+
        call check(nf90_put_var(ncFileID, statVarID(45), shum_var_avg,                         &
-            start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
+            start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
 
        call check(nf90_put_var(ncFileID, statVarID(46), mrdnl_shum_flux_avg,                  &
             start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
@@ -1281,19 +1339,19 @@ contains
 
 
        call check(nf90_put_var(ncFileID, statVarID(56), sat_shum_avg,                         &
-            start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
+            start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
 
        call check(nf90_put_var(ncFileID, statVarID(57), sat_shum_var_avg,                     &
-            start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
+            start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
 
        call check(nf90_put_var(ncFileID, statVarID(58), rhum_avg,                             &
-            start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))       
+            start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
        call check(nf90_put_var(ncFileID, statVarID(59), rhum_spec,                            &
             start = (/ 1, 1, 1 /), count = (/ num_fourier+1, num_fourier+1, num_lev /) ))
 
        call check(nf90_put_var(ncFileID, statVarID(60), rhum_pdf,                             &
-            start = (/ 1, 1 /), count = (/num_lat, num_lev, num_bin/) )) 
+            start = (/ 1, 1 /), count = (/num_lat, num_lev, num_bin/) ))
 
        call check(nf90_put_var(ncFileID, statVarID(61), pot_temp_e_avg,                       &
             start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
@@ -1308,16 +1366,16 @@ contains
             start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
        call check(nf90_put_var(ncFileID, statVarID(65), mrdnl_eddy_pot_temp_e_flux_avg,       &
-            start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
-   
+            start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
+
        call check(nf90_put_var(ncFileID, statVarID(66), vrtcl_eddy_pot_temp_e_flux_avg,       &
             start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
-      
+
        call check(nf90_put_var(ncFileID, statVarID(67), d_dy_pot_temp_e_avg,                  &
-            start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
+            start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
 
        call check(nf90_put_var(ncFileID, statVarID(68), d_dp_pot_temp_e_avg,                  &
-            start = (/ 1, 1 /), count = (/num_lat, num_lev/) )) 
+            start = (/ 1, 1 /), count = (/num_lat, num_lev/) ))
 
        call check(nf90_put_var(ncFileID, statVarID(69), pot_temp_e_spec,                      &
             start = (/ 1, 1, 1 /), count = (/ num_fourier+1, num_fourier+1, num_lev /) ))
@@ -1336,7 +1394,6 @@ contains
 
        call check(nf90_put_var(ncFileID, statVarID(74), precip_daily_above_threshold_prob_avg,   &
             start = (/ 1 /), count = (/ num_lat /) ))
-
 
        call check(nf90_put_var(ncFileID, statVarID(75), sfc_flux_sw_avg,                     &
             start = (/ 1 /), count = (/ num_lat /) ))
@@ -1383,7 +1440,7 @@ contains
     if(isentrope) then
        call check(nf90_put_var(ncFileID, statVarID(101), p_isent_avg_nw,              &
             start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
-  
+
        call check(nf90_put_var(ncFileID, statVarID(102), p_var_isent_avg_nw,          &
             start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
 
@@ -1403,7 +1460,7 @@ contains
             start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
 
        call check(nf90_put_var(ncFileID, statVarID(108), v_isent_avg,                 &
-            start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))         
+            start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
 
        call check(nf90_put_var(ncFileID, statVarID(109), v_var_isent_avg,             &
             start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
@@ -1437,15 +1494,16 @@ contains
 
        call check(nf90_put_var(ncFileID, statVarID(127), pot_enstrophy_isent_avg,        &
             start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
-      
+
        call check(nf90_put_var(ncFileID, statVarID(128), mrdnl_eddy_pot_enstrophy_flux_isent_avg,        &
-            start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) )) 
+            start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
+
 
        if(moisture) then
 
           call check(nf90_put_var(ncFileID, statVarID(120), shum_isent_avg,                  &
                start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
- 
+
           call check(nf90_put_var(ncFileID, statVarID(121), mrdnl_shum_flux_isent_avg,       &
                start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
 
@@ -1459,14 +1517,14 @@ contains
                start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
 
           call check(nf90_put_var(ncFileID, statVarID(125), mrdnl_sat_shum_flux_isent_avg,   &
-               start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))       
+               start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
 
           call check(nf90_put_var(ncFileID, statVarID(126), mrdnl_eddy_sat_shum_flux_isent_avg,   &
-               start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))       
+               start = (/ 1, 1 /), count = (/ num_lat, MaxIsentrLev /) ))
 
        endif
 
-    endif   
+    endif
 
 
 
@@ -1504,11 +1562,11 @@ contains
     call check(nf90_put_var(ncFileID, statVarID(150), t_non_lin_eddy_spec,      &
          start = (/ 1, 1, 1 /), count = (/ num_fourier+1, num_fourier+1, num_lev /) ))
 
-     
+
 
     ! added fridoo sept 2012 (hydrology)
     if(bucket) then
-       
+
         call check(nf90_put_var(ncFileID, statVarID(301), bucket_depth_avg,                   &
          start = (/ 1/), count = (/num_lat /) ))
         call check(nf90_put_var(ncFileID, statVarID(302), bucket_depth_conv_avg,                   &
@@ -1521,9 +1579,9 @@ contains
          start = (/ 1 /), count = (/num_lat /) ))
     endif
     ! end fridoo
- 
+
     call check(nf90_sync(ncFileID))
-  
+
 
 
   end subroutine write_variables
@@ -1539,42 +1597,15 @@ contains
 ! #############################################################################
 
   subroutine check(status)
-    
+
     ! checks error status after each netcdf, prints out text message each time
-    !   an error code is returned. 
-    
+    !   an error code is returned.
+
     integer, intent(in) :: status
-    
-    if(status /= nf90_noerr) then 
+
+    if(status /= nf90_noerr) then
        write(*, *) trim(nf90_strerror(status))
     end if
-  end subroutine check 
-  
+  end subroutine check
+
 end module output_mod
-
-
-
-
-
-
- 
-
-
-         
-         
-
-
-
-
-
-
-
-
-
-
-   
-
-
-
-
-

@@ -1,7 +1,7 @@
 module vars
 
 ! allocatable arrays and namelist variables
-  
+
   implicit none
 
 ! --------------------------- coordinate variables ---------------------------
@@ -24,20 +24,22 @@ module vars
 !------------------ gridpoint variables on pressure surfaces -------------------
 
   real, allocatable, dimension(:,:,:) ::                                      &
-       u_grid,             &   ! zonal wind 
+       u_grid,             &   ! zonal wind
        shum_grid,          &   ! specific humidity
        dt_shum_cond_grid,    &   ! large scale cond specific humidity tendency
        dt_shum_conv_grid,    &   ! convection specific humidity tendency
-       dt_shum_diff_grid,    &  
+       dt_shum_diff_grid,    &
        dt_shum_cond_counter, &   ! counter for large scale cond specific humidity tendency
        dt_shum_conv_counter, &   ! counter for convection specific humidity tendency
-       dt_temp_cond_grid,    &  
-       dt_temp_conv_grid,    &  
-       dt_temp_diff_grid,    &  
+       dt_temp_cond_grid,    &
+       dt_temp_conv_grid,    &
+       dt_temp_diff_grid,    &
        dt_temp_rad_grid,     &
        dt_temp_sw_grid,      &
        v_grid,             &   ! meridional wind
        vor_grid,           &   ! vorticity
+       dt_u_drag_grid,     &   ! zonal wind tendency from quadratic drag
+       dt_v_drag_grid,     &   ! meridional wind tendency from quadratic drag
        div_grid,           &   ! divergence
        temp_grid,          &   ! temperature
        virtual_temp_grid,  &   ! virtual temperature
@@ -52,6 +54,7 @@ module vars
        pot_temp_e_grid,            &   ! equivalent potential temperature
        pot_temp_e_sat_grid,        &   ! saturated equivalent potential temperature
        geopot_grid,        &   ! geopotential
+       dy_geopot_grid,     &   ! geopotential meridional derivative
        mont_grid,          &   ! Montgomery streamfunction
        dx_mont_grid,       &   ! x derivative of Montgomery streamfunction
        sat_mr_grid,        &   ! saturation mixing ratio
@@ -71,23 +74,23 @@ module vars
        precip_conv_grid,   &   ! convection precipitation
        sfc_flux_lh_grid,   &
        sfc_flux_sh_grid,   &
-       sfc_flux_sw_grid,   & 
+       sfc_flux_sw_grid,   &
        sfc_flux_lwd_grid,  &
        sfc_flux_lwu_grid,  &
        sfc_flux_ocean_grid,&
-       toa_flux_sw_grid,   & 
+       toa_flux_sw_grid,   &
        toa_flux_lwu_grid,  &
        drag_coeff_mo_grid, &
        drag_coeff_lh_grid, &
        drag_coeff_sh_grid, &
        bucket_depth_grid,  &     ! bucket water depth on continents
-       bucket_depth_conv_grid, & ! bucket water depth on continents tendency (convection tendency)  
-       bucket_depth_cond_grid, & ! bucket water depth on continents tendency (condensation tendency)  
-       bucket_depth_LH_grid,   & ! bucket water depth on continents tendency (latent heat)  
-       bucket_diffusion_grid,  & ! bucket water depth on continents tendency (horizontal diffusion)   
-       precip_daily,       &   ! daily precipitation 
-       precip_cond_daily,  &   ! daily large scale cond precipitation 
-       precip_conv_daily,  &   ! daily convection precipitation 
+       bucket_depth_conv_grid, & ! bucket water depth on continents tendency (convection tendency)
+       bucket_depth_cond_grid, & ! bucket water depth on continents tendency (condensation tendency)
+       bucket_depth_LH_grid,   & ! bucket water depth on continents tendency (latent heat)
+       bucket_diffusion_grid,  & ! bucket water depth on continents tendency (horizontal diffusion)
+       precip_daily,       &   ! daily precipitation
+       precip_cond_daily,  &   ! daily large scale cond precipitation
+       precip_conv_daily,  &   ! daily convection precipitation
        one_array               ! array of ones
 
   real, allocatable, dimension(:,:)  ::                                       &
@@ -129,7 +132,7 @@ module vars
        bc_sfctn_spec,      &   ! baroclinic energy spectrum
        bt_sfctn_spec           ! barotropic energy spectrum
 
-  
+
 !------------------- gridpoint variables on theta surfaces ---------------------
 
   real, allocatable, dimension(:, :, :) ::                                    &
@@ -143,14 +146,14 @@ module vars
        mrdnl_abs_vor_flux_isent_grid,     &
        pot_vor_isent_grid,     &   ! isentropic potential vorticity (PV)
        v_pot_square_vor_isent_grid, & ! added fridoo
-       pot_square_vor_isent_grid, & 
+       pot_square_vor_isent_grid, &
        pot_vor_var_isent_grid, &
        mrdnl_pot_vor_flux_isent_grid,     &
        u_isent_grid,           &   ! zonal wind
        u_var_isent_grid,       &
        v_isent_grid,           &   ! meridional wind
-       vcos_isent_grid,        &   ! meridional wind      
-       vcos_isent_grid_nw,     &   ! meridional wind      
+       vcos_isent_grid,        &   ! meridional wind
+       vcos_isent_grid_nw,     &   ! meridional wind
        v_var_isent_grid,       &
        v_geostr_isent_grid,    &
        shum_isent_grid,        &   ! specific humidity
@@ -184,10 +187,15 @@ module vars
        v_avg,                    &   ! meridional wind
        vcos_avg,                 &   ! cosine(latitude)*meridional wind
        v_var_avg,                &   ! meridional wind variance
+       vrtcl_v_flux_avg,         &   ! w*v ; w =  \dot\sigma
+       vrtcl_eddy_v_flux_avg,    &   ! w*v ; w =  \dot\sigma
+       vort_avg,                 &   ! vorticity
+       div_avg,                  &   ! divergence
+       dt_u_drag_avg,            &   ! zonal wind tendency from quadratic drag
+       dt_v_drag_avg,            &   ! meridional wind tendency from quadratic drag
        sfctn_avg,                &   ! streamfunction
        TEM_res_circ,             &   ! TEM residual circulation
        MTEM_res_circ,            &   ! Modified TEM residual circulation
-       vort_avg,                 &   ! meridional wind
        w_avg,                    &   ! vertical wind (w =  \dot\sigma)
        w_var_avg,                &   ! vertical wind variance
        temp_avg,                 &   ! temperature
@@ -209,8 +217,9 @@ module vars
        buoyancy_freq_avg,            &    ! Brunt-Vaeisaelae frequency
        z_avg,                    &   ! geopotential height
        z_var_avg,                &   ! geopotential height variance
+       mrdnl_z_deriv_avg,        &   ! geopotential height meridional derivative
        mrdnl_z_flux_avg,         &   ! zonal mean [ psfc * v * cos(lat) * z ]
-       vrtcl_z_flux_avg,         &   ! vertical z flux 
+       vrtcl_z_flux_avg,         &   ! vertical z flux
        mrdnl_eddy_z_flux_avg,    &   ! meridional eddy z flux
        vrtcl_eddy_z_flux_avg,    &   ! vertical eddy z flux
        shum_avg,                 &   ! specific humidity
@@ -234,7 +243,7 @@ module vars
        pot_temp_e_sat_avg,          &   ! saturated equivalent potential temperature
        dt_shum_cond_avg,         &   ! large scale cond specific humidity tendency
        dt_shum_conv_avg,         &   ! convection specific humidity tendency
-       dt_shum_diff_avg,         &  
+       dt_shum_diff_avg,         &
        shum_cond_prob_avg,       &   ! large scale cond specific humidity tendency frequency
        shum_conv_prob_avg,       &  ! convection specific humidity tendency frequency
        dt_temp_cond_avg,         &
@@ -254,32 +263,32 @@ module vars
        precip_conv_avg,       &   ! convection precipiation
        sfc_flux_lh_avg,       &
        sfc_flux_sh_avg,       &
-       sfc_flux_sw_avg,       & 
+       sfc_flux_sw_avg,       &
        sfc_flux_lwd_avg,      &
        sfc_flux_lwu_avg,      &
        sfc_flux_ocean_avg,    &
-       toa_flux_sw_avg,       & 
+       toa_flux_sw_avg,       &
        toa_flux_lwu_avg,      &
        bucket_depth_avg,      & ! bucket water depth on continents
-       bucket_depth_conv_avg, & ! bucket water depth on continents (convection tendency)  
-       bucket_depth_cond_avg, & ! bucket water depth on continents (condensation tendency)  
-       bucket_depth_LH_avg,   & ! bucket water depth on continents (condensation tendency)  
+       bucket_depth_conv_avg, & ! bucket water depth on continents (convection tendency)
+       bucket_depth_cond_avg, & ! bucket water depth on continents (condensation tendency)
+       bucket_depth_LH_avg,   & ! bucket water depth on continents (condensation tendency)
        bucket_diffusion_avg,  & ! bucket water depth on continents (horizontal diffusion)
        drag_coeff_mo_avg,     &
        drag_coeff_lh_avg,     &
        drag_coeff_sh_avg,     &
-       precip_daily_above_threshold_avg,      &  
+       precip_daily_above_threshold_avg,      &
        days_total,                            &
        days_above_threshold,                  &
-       precip_daily_above_threshold_prob_avg  
+       precip_daily_above_threshold_prob_avg
 ! -----------------------------------------------------------------------------
 ! ---------- zonally averaged gridpoint variables on theta surfaces  ----------
 
   real, allocatable, dimension(:) ::                                          &
       mont_dx_pot_temp_sfc_avg,                                                  &
-      mrdnl_geostr_eddy_pot_temp_flux_sfc_avg                                    
+      mrdnl_geostr_eddy_pot_temp_flux_sfc_avg
 
-     
+
   real, allocatable, dimension(:, :) ::                                       &
        sfctn_isent_avg,        &   ! streamfunction
        pot_vor_isent_avg,          &   ! \avg{density * IPV}
@@ -297,7 +306,7 @@ module vars
        sfc_pot_temp_pdf,          &   ! frequency distribution of surface temperatures
        v_isent_avg,            &   ! meridional wind
        vcos_isent_avg,         &   ! meridional wind
-       v_geostr_isent_avg,     & 
+       v_geostr_isent_avg,     &
        u_isent_avg,            &   ! zonal wind
        shum_isent_avg,         &   ! specific humidity
        rhum_isent_avg,         &   ! relative humidity
@@ -316,12 +325,12 @@ module vars
 
   integer, parameter ::                                                       &
        max_len = 300           ! maximum length of namelist string variables
-                    
+
   integer ::                                                                  &
        DataIn,             &   ! input momentum fields (u_and_v or vor_and_div)
        data_source,        &   ! source of data (FMS=1, NCEP=2, CCM3=3)
        num_fourier,        &   ! number of Fourier waves
-       num_segments = 1,   &   ! number of segments (e.g., pentads)        
+       num_segments = 1,   &   ! number of segments (e.g., pentads)
        num_bin,            &   ! number of bins for relative humidity pdf
        MaxIsentrLev            ! number of isentropic levels
 
@@ -333,9 +342,9 @@ module vars
        virtual,            &   ! flag for virtual temp effect for z and svol
        bucket,             &   ! flag to analyse hydrology
        moist_isentropes        ! flag to analyze data on moist isentropes
-  
+
   real ::                                                                     &
-       TimeIn = 0.,        &   ! start time of analysis       
+       TimeIn = 0.,        &   ! start time of analysis
        PotTempMin,         &   ! minimum isentropic level
        PotTempMax,         &   ! maximum isentropic level
        delta_t,            &   ! timestep (seconds) for diabatic diagnostics
@@ -372,14 +381,16 @@ module vars
        DiabDiffVarName,           &
        DiabRadVarName,            &
        DiabSWVarName,             &
-       BucketDepthVarName,        & 
-       BucketDepthConvVarName,    & 
-       BucketDepthCondVarName,    & 
-       BucketDepthLHVarName,    & 
-       BucketDiffusionVarName,    & 
+       BucketDepthVarName,        &
+       BucketDepthConvVarName,    &
+       BucketDepthCondVarName,    &
+       BucketDepthLHVarName,    &
+       BucketDiffusionVarName,    &
        DragMOVarName,             &
        DragLHVarName,             &
        DragSHVarName,             &
+       UDragTendVarName,          &
+       VDragTendVarName,          &
        OutputFileName                 ! output file name
 
   namelist /main_list/                                                        &
@@ -403,13 +414,15 @@ module vars
                      DiabCondVarName,                 DiabConvVarName,        &
                      DiabDiffVarName,                                         &
                       DiabRadVarName,                   DiabSWVarName,        &
-                      BucketDepthVarName,                                     & 
-                      BucketDepthConvVarName,                                 & 
-                      BucketDepthCondVarName,                                 & 
-                      BucketDepthLHVarName,                                   & 
-                      BucketDiffusionVarName,                                 & 
+                      BucketDepthVarName,                                     &
+                      BucketDepthConvVarName,                                 &
+                      BucketDepthCondVarName,                                 &
+                      BucketDepthLHVarName,                                   &
+                      BucketDiffusionVarName,                                 &
                        DragMOVarName,                   DragLHVarName,        &
                        DragSHVarName,                                         &
+                       UDragTendVarName, &
+                       VDragTendVarName, &
                          is_gaussian,                        moisture,        &
                     moist_isentropes,                         num_bin,        &
                            isentrope,          precip_daily_threshold,        &
@@ -417,8 +430,7 @@ module vars
                         num_segments
 
 
-  namelist /filename_list/                                                    &
-                       InputFileName,                  OutputFileName
+  namelist /filename_list/ InputFileName, OutputFileName
 
   contains
 
@@ -463,13 +475,15 @@ module vars
       allocate(         sfctn_grid(num_lon, num_lat, num_lev+1))
       allocate(           vor_grid(num_lon, num_lat, num_lev))
       allocate(           div_grid(num_lon, num_lat, num_lev))
+      allocate(     dt_u_drag_grid(num_lon, num_lat, num_lev))
+      allocate(     dt_v_drag_grid(num_lon, num_lat, num_lev))
       allocate(             w_grid(num_lon, num_lat, num_lev))
       allocate(          dpdt_grid(num_lon, num_lat, num_lev))
       allocate(          temp_grid(num_lon, num_lat, num_lev))
       allocate(  virtual_temp_grid(num_lon, num_lat, num_lev))
       allocate(     pot_temp_grid(num_lon, num_lat, num_lev))
       allocate(        geopot_grid(num_lon, num_lat, num_lev))
-
+      allocate(     dy_geopot_grid(num_lon, num_lat, num_lev))
       allocate(    pot_temp_e_grid(num_lon, num_lat, num_lev))
       allocate(pot_temp_e_sat_grid(num_lon, num_lat, num_lev))
       allocate(          shum_grid(num_lon, num_lat, num_lev))
@@ -485,19 +499,19 @@ module vars
       allocate(   precip_cond_grid(num_lon, num_lat))
       allocate(   precip_conv_grid(num_lon, num_lat))
       allocate(  precip_cond_daily(num_lon, num_lat))
-      allocate(  precip_conv_daily(num_lon, num_lat))     
+      allocate(  precip_conv_daily(num_lon, num_lat))
 
       allocate(        precip_mask(num_lon, num_lat))
       allocate(          one_array(num_lon, num_lat))
 
-      allocate( bucket_depth_grid(num_lon, num_lat)) 
-      allocate( bucket_depth_conv_grid(num_lon, num_lat)) 
-      allocate( bucket_depth_cond_grid(num_lon, num_lat)) 
-      allocate( bucket_depth_LH_grid(num_lon, num_lat)) 
-      allocate( bucket_diffusion_grid(num_lon, num_lat)) 
+      allocate( bucket_depth_grid(num_lon, num_lat))
+      allocate( bucket_depth_conv_grid(num_lon, num_lat))
+      allocate( bucket_depth_cond_grid(num_lon, num_lat))
+      allocate( bucket_depth_LH_grid(num_lon, num_lat))
+      allocate( bucket_diffusion_grid(num_lon, num_lat))
 
-      allocate( drag_coeff_mo_grid(num_lon, num_lat)) 
-      allocate( drag_coeff_lh_grid(num_lon, num_lat)) 
+      allocate( drag_coeff_mo_grid(num_lon, num_lat))
+      allocate( drag_coeff_lh_grid(num_lon, num_lat))
       allocate( drag_coeff_sh_grid(num_lon, num_lat))
 
       allocate(   sfc_flux_lh_grid(num_lon, num_lat))
@@ -545,15 +559,20 @@ module vars
       allocate(                  v_avg(num_lat, num_lev  ))
       allocate(               vcos_avg(num_lat, num_lev  ))
       allocate(              v_var_avg(num_lat, num_lev  ))
-      allocate(             v_barotr_avg(num_lat))
-      allocate(         v_barotr_var_avg(num_lat))
+      allocate(       vrtcl_v_flux_avg(num_lat, num_lev  ))
+      allocate(  vrtcl_eddy_v_flux_avg(num_lat, num_lev  ))
+      allocate(           v_barotr_avg(num_lat))
+      allocate(       v_barotr_var_avg(num_lat))
 
+      allocate(          dt_u_drag_avg(num_lat, num_lev  ))
+      allocate(          dt_v_drag_avg(num_lat, num_lev  ))
+
+      allocate(               vort_avg(num_lat, num_lev  ))
+      allocate(                div_avg(num_lat, num_lev  ))
 
       allocate(              sfctn_avg(num_lat, num_lev  ))
       allocate(           TEM_res_circ(num_lat, num_lev  ))
       allocate(          MTEM_res_circ(num_lat, num_lev  ))
-
-      allocate(               vort_avg(num_lat, num_lev  ))
 
       allocate(                  w_avg(num_lat, num_lev  ))
       allocate(              w_var_avg(num_lat, num_lev  ))
@@ -579,6 +598,7 @@ module vars
 
       allocate(                  z_avg(num_lat, num_lev  ))
       allocate(              z_var_avg(num_lat, num_lev  ))
+      allocate(      mrdnl_z_deriv_avg(num_lat, num_lev  ))
       allocate(       mrdnl_z_flux_avg(num_lat, num_lev  ))
       allocate(       vrtcl_z_flux_avg(num_lat, num_lev  ))
       allocate(      mrdnl_eddy_z_flux_avg(num_lat, num_lev  ))
@@ -713,11 +733,11 @@ module vars
       allocate(             k_sfc(num_lon, num_lat              ))
       allocate(            k_asfc(num_lon, num_lat              ))
 
-      allocate( bucket_depth_avg(num_lat)) 
-      allocate( bucket_depth_conv_avg(num_lat)) 
-      allocate( bucket_depth_cond_avg(num_lat)) 
-      allocate( bucket_depth_LH_avg(num_lat)) 
-      allocate( bucket_diffusion_avg(num_lat)) 
+      allocate( bucket_depth_avg(num_lat))
+      allocate( bucket_depth_conv_avg(num_lat))
+      allocate( bucket_depth_cond_avg(num_lat))
+      allocate( bucket_depth_LH_avg(num_lat))
+      allocate( bucket_diffusion_avg(num_lat))
 
 
       allocate(     drag_coeff_mo_avg(num_lat))
@@ -794,6 +814,8 @@ module vars
       v_avg                   =  0.0
       vcos_avg                =  0.0
       v_var_avg               =  0.0
+      vrtcl_v_flux_avg        =  0.0
+      vrtcl_eddy_v_flux_avg   =  0.0
       v_barotr_avg              =  0.0
       v_barotr_var_avg          =  0.0
 
@@ -804,6 +826,10 @@ module vars
       MTEM_res_circ           =  0.0
 
       vort_avg                =  0.0
+      div_avg                 =  0.0
+
+      dt_u_drag_avg           =  0.0
+      dt_v_drag_avg           =  0.0
 
       w_avg                   =  0.0
       w_var_avg               =  0.0
@@ -829,6 +855,7 @@ module vars
 
       z_avg                   =  0.0
       z_var_avg               =  0.0
+      mrdnl_z_deriv_avg       =  0.0
 
       mrdnl_z_flux_avg        =  0.0
       vrtcl_z_flux_avg        =  0.0
@@ -876,20 +903,20 @@ module vars
       dt_temp_cond_avg        = 0.0
       dt_temp_conv_avg        = 0.0
       dt_temp_diff_avg        = 0.0
-      dt_temp_rad_avg         = 0.0 
-      dt_temp_sw_avg          = 0.0 
-      
+      dt_temp_rad_avg         = 0.0
+      dt_temp_sw_avg          = 0.0
+
 
       precip_daily_above_threshold_avg      =  0.0
       days_total                            =  0.0
-      days_above_threshold                  =  0.0 
-      precip_daily_above_threshold_prob_avg =  0.0        
+      days_above_threshold                  =  0.0
+      precip_daily_above_threshold_prob_avg =  0.0
       precip_cond_daily                     =  0.0
       precip_conv_daily                     =  0.0
       one_array                             =  1.0
 
-      sfc_flux_lh_avg         =  0.0 
-      sfc_flux_sh_avg         =  0.0 
+      sfc_flux_lh_avg         =  0.0
+      sfc_flux_sh_avg         =  0.0
       sfc_flux_sw_avg         =  0.0
       sfc_flux_lwd_avg        =  0.0
       sfc_flux_lwu_avg        =  0.0
@@ -912,7 +939,7 @@ module vars
       shum_spec_avg                  =  0.0
       sat_shum_spec_avg              =  0.0
       rhum_spec_avg                  =  0.0
-      rhum_pdf                   =  0.0 
+      rhum_pdf                   =  0.0
       ! pdf bins for relative humidity
       ! include one negative bin
       do i=1, num_bin
@@ -920,17 +947,18 @@ module vars
       enddo
 
       mont_sfc     = 0.0
-      dx_mont_sfc  = 0.0 
+      dx_mont_sfc  = 0.0
       dy_mont_sfc  = 0.0
 
-      dx_pot_temp_sfc  = 0.0 
+      dx_pot_temp_sfc  = 0.0
       dy_pot_temp_sfc  = 0.0
 
       geopot_sfc              =  0.0
       geopot_grid             =  0.0
+      dy_geopot_grid          =  0.0
       k_sfc                   =  0
       k_asfc                  =  0
-      sfc_pot_temp_pdf           =  0.0      
+      sfc_pot_temp_pdf           =  0.0
       shum_isent_avg              =  0.0
       rhum_isent_avg              =  0.0
       sat_shum_isent_avg          =  0.0
@@ -971,8 +999,8 @@ module vars
       mrdnl_eddy_pot_vor_flux_isent_avg =  0.0
 
       pot_enstrophy_isent_avg = 0.0
-      v_pot_enstrophy_isent_avg = 0.0 
-      mrdnl_eddy_pot_enstrophy_flux_isent_avg = 0.0 
+      v_pot_enstrophy_isent_avg = 0.0
+      mrdnl_eddy_pot_enstrophy_flux_isent_avg = 0.0
 
       sfctn_isent_grid               =  0.0
       mont_isent_grid                =  0.0

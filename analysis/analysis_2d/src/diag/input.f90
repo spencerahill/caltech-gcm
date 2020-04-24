@@ -1,5 +1,5 @@
 module input_mod
-  
+
   use constants_and_switches_mod
   use netcdf
 
@@ -15,7 +15,8 @@ module input_mod
 
 ! ---------------------------input file variables--------------------------
 
-  integer :: UncInputID,     &   ! zonal wind input file id
+  integer :: &
+       UncInputID,           &   ! zonal wind input file id
        VncInputID,           &   ! meridional wind input file id
        VORncInputID,         &   ! vorticity input file id
        DIVncInputID,         &   ! divergence input file id
@@ -25,15 +26,15 @@ module input_mod
        SHumncInputID,        &   ! specific humidity input file id
        CondncInputID,        &   ! condensation moisture tendency input file id
        ConvncInputID,        &   ! convection moisture tendency input file id
-       DiffncInputID,        &   
-       PrecipCondncInputID,  &   ! condensation moisture tendency input file id 
+       DiffncInputID,        &
+       PrecipCondncInputID,  &   ! condensation moisture tendency input file id
        PrecipConvncInputID,  &   ! convection moisture tendency input file id
-       SfcFluxLHncInputID,   &   
+       SfcFluxLHncInputID,   &
        SfcFluxSHncInputID,   &
        SfcFluxSWncInputID,   &
        SfcFluxLWDncInputID,  &
        SfcFluxLWUncInputID,  &
-       SfcFluxQFncInputID,   &           
+       SfcFluxQFncInputID,   &
        ToaFluxSWncInputID,   &
        ToaFluxLWUncInputID,  &
        BucketDepthncInputID,    &
@@ -49,6 +50,8 @@ module input_mod
        DragMOncInputID,      &
        DragLHncInputID,      &
        DragSHncInputID,      &
+       UDragTendncInputID,   &
+       VDragTendncInputID,   &
        UVarID,               &   ! zonal wind ID
        VVarID,               &   ! meridional wind ID
        VORVarID,             &   ! vorticity ID
@@ -62,12 +65,12 @@ module input_mod
        DiffVarID,            &
        PrecipCondVarID,      &   ! large scale cond precip ID
        PrecipConvVarID,      &   ! convection precip ID
-       SfcFluxLHVarID,       &   
+       SfcFluxLHVarID,       &
        SfcFluxSHVarID,       &
        SfcFluxSWVarID,       &
-       SfcFluxLWDVarID,      & 
+       SfcFluxLWDVarID,      &
        SfcFluxLWUVarID,      &
-       SfcFluxQFVarID,       &           
+       SfcFluxQFVarID,       &
        ToaFluxSWVarID,       &
        ToaFluxLWUVarID,      &
        DiabCondVarID,        &
@@ -83,22 +86,24 @@ module input_mod
        DragMOVarID,          &
        DragLHVarID,          &
        DragSHVarID,          &
+       UDragTendVarID,       &
+       VDragTendVarID,       &
        ierror,               &   ! error flag for GRIB reads
        GribUnit                  ! GRIB file identifier (for ERA40 data)
 
   integer ::                                                                  &
        DataIn,             &   ! U and V or Vor and Div
        Data_Source,        &   ! where the data come from
-       GRIBID                  ! index of GRIB ID 
+       GRIBID                  ! index of GRIB ID
 
   integer, dimension(nf90_max_var_dims) ::                                    &
-       dimIDs                  ! dimensions of time 
+       dimIDs                  ! dimensions of time
 
   logical ::                                                                  &
        isentrope,          &
        moisture,           &    ! process moisture or not
        bucket,             &    ! bucket hydrology
-       virtual                  ! use virtual temp for z and svol or not 
+       virtual                  ! use virtual temp for z and svol or not
 
   character(len=128) ::                                                       &
        GRIBFile                ! GRIB filename
@@ -128,34 +133,53 @@ module input_mod
 contains
 ! #############################################################################
 
-  subroutine open_input_files(                                                &
-                        DataIn_local,               Data_Source_local,        &
-                      local_moisture,                    local_bucket,        & 
-                       local_virtual,                 local_isentrope,        &
-                            UVarName,                        VVarName,        &
-                          VORVarName,                      DIVVarName,        &
-                         TEMPVarName,                       TSVarName,        &
-                           PSVarName,                                         &
-                          SHumVarName,                                         &
-                         CondVarName,                     ConvVarName,        &
-                         DiffVarName,                                         &
-                   PrecipCondVarName,               PrecipConvVarName,        &
-                    SfcFluxLHVarName,                SfcFluxSHVarName,        &
-                    SfcFluxSWVarName,               SfcFluxLWDVarName,        &
-                   SfcFluxLWUVarName,                SfcFluxQFVarName,        &          
-                    ToaFluxSWVarName,               ToaFluxLWUVarName,        & 
-                     DiabCondVarName,                 DiabConvVarName,        &
-                     DiabDiffVarName,                  DiabRadVarName,        &
-                       DiabSWVarName,                                         &
-                  BucketDepthVarName,          BucketDepthConvVarName,        &
-              BucketDepthCondVarName,            BucketDepthLHVarName,        &            
-              BucketDiffusionVarName,                                         &
-                       DragMOVarName,                   DragLHVarName,        &
-                       DragSHVarName,                                         &
-                       InputFileName)
+  subroutine open_input_files( &
+       DataIn_local, &
+       Data_Source_local, &
+       local_moisture, &
+       local_bucket, &
+       local_virtual, &
+       local_isentrope, &
+       UVarName, &
+       VVarName, &
+       VORVarName, &
+       DIVVarName, &
+       TEMPVarName, &
+       TSVarName, &
+       PSVarName, &
+       SHumVarName, &
+       CondVarName, &
+       ConvVarName, &
+       DiffVarName, &
+       PrecipCondVarName, &
+       PrecipConvVarName, &
+       SfcFluxLHVarName, &
+       SfcFluxSHVarName, &
+       SfcFluxSWVarName, &
+       SfcFluxLWDVarName, &
+       SfcFluxLWUVarName, &
+       SfcFluxQFVarName, &
+       ToaFluxSWVarName, &
+       ToaFluxLWUVarName, &
+       DiabCondVarName, &
+       DiabConvVarName, &
+       DiabDiffVarName, &
+       DiabRadVarName, &
+       DiabSWVarName, &
+       BucketDepthVarName, &
+       BucketDepthConvVarName, &
+       BucketDepthCondVarName, &
+       BucketDepthLHVarName, &
+       BucketDiffusionVarName, &
+       DragMOVarName, &
+       DragLHVarName, &
+       DragSHVarName, &
+       UDragTendVarName, &
+       VDragTendVarName, &
+       InputFileName)
 
     integer, intent(in) ::                                                    &
-         DataIn_local,     &   ! What data are input (u and v or vor and div) 
+         DataIn_local,     &   ! What data are input (u and v or vor and div)
          data_source_local     ! What source the data are from
 
     logical, intent(in) ::                                                    &
@@ -166,27 +190,44 @@ contains
 
 
 
-    character(len=*), intent(in)  ::                                          &
-                            UVarName,                        VVarName,        &
-                          VORVarName,                      DIVVarName,        &
-                         TEMPVarName,                       TSVarName,        & 
-                           PSVarName,                                         &
-                         CondVarName,                     ConvVarName,        &
-                         DiffVarName,                                         &
-                   PrecipCondVarName,               PrecipConvVarName,        &
-                    SfcFluxLHVarName,                SfcFluxSHVarName,        &
-                    SfcFluxSWVarName,               SfcFluxLWDVarName,        &
-                   SfcFluxLWUVarName,                SfcFluxQFVarName,        &           
-                    ToaFluxSWVarName,               ToaFluxLWUVarName,        &
-                     DiabCondVarName,                 DiabConvVarName,        &
-                     DiabDiffVarName,                                         &
-                      DiabRadVarName,                   DiabSWVarName,        &
-                       DragMOVarName,                   DragLHVarName,        &
-                       DragSHVarName,                                         &
-                  BucketDepthVarName,          BucketDepthConvVarName,        &
-              BucketDepthCondVarName,            BucketDepthLHVarName,        &
-              BucketDiffusionVarName,                                         &
-                         SHumVarName,                   InputFileName
+    character(len=*), intent(in)  :: &
+         UVarName, &
+         VVarName, &
+         VORVarName, &
+         DIVVarName, &
+         TEMPVarName, &
+         TSVarName, &
+         PSVarName, &
+         CondVarName, &
+         ConvVarName, &
+         DiffVarName, &
+         PrecipCondVarName, &
+         PrecipConvVarName, &
+         SfcFluxLHVarName, &
+         SfcFluxSHVarName, &
+         SfcFluxSWVarName, &
+         SfcFluxLWDVarName, &
+         SfcFluxLWUVarName, &
+         SfcFluxQFVarName, &
+         ToaFluxSWVarName, &
+         ToaFluxLWUVarName, &
+         DiabCondVarName, &
+         DiabConvVarName, &
+         DiabDiffVarName, &
+         DiabRadVarName, &
+         DiabSWVarName, &
+         DragMOVarName, &
+         DragLHVarName, &
+         DragSHVarName, &
+         UDragTendVarName, &
+         VDragTendVarName, &
+         BucketDepthVarName, &
+         BucketDepthConvVarName, &
+         BucketDepthCondVarName, &
+         BucketDepthLHVarName, &
+         BucketDiffusionVarName, &
+         SHumVarName, &
+         InputFileName
 
 !                           --- executable code ---
     DataIn = dataIn_local
@@ -199,7 +240,6 @@ contains
 
 
 
-!!!!XL       
        call check(nf90_open(trim(InputFileName), nf90_nowrite, TEMPncInputID ) )
        call check(nf90_open(trim(InputFileName), nf90_nowrite,   PSncInputID ) )
        call check(nf90_inq_varid(TEMPncInputID, trim(TEMPVarName),   TEMPVarID ) )
@@ -211,8 +251,11 @@ contains
        call check(nf90_inq_varid(DiabDiffncInputID, trim(DiabDiffVarName), DiabDiffVarID) )
        call check(nf90_open(InputFileName, nf90_nowrite, DiabRadncInputID ) )
        call check(nf90_inq_varid(DiabRadncInputID, trim(DiabRadVarName), DiabRadVarID) )
-!!!!XL
 
+       call check(nf90_open(InputFileName, nf90_nowrite, UDragTendncInputID ) )
+       call check(nf90_inq_varid(UDragTendncInputID, trim(UDragTendVarName), UDragTendVarID) )
+       call check(nf90_open(InputFileName, nf90_nowrite, VDragTendncInputID ) )
+       call check(nf90_inq_varid(VDragTendncInputID, trim(VDragTendVarName), VDragTendVarID) )
 
        if(DataIn .eq. vor_and_div) then
           call check(nf90_open(trim(InputFileName), nf90_nowrite, VORncInputID ))
@@ -225,8 +268,17 @@ contains
           call check(nf90_open(InputFileName, nf90_nowrite, VncInputID ) )
           call check(nf90_inq_varid(UncInputID, trim(UVarName), UVarID        ) )
           call check(nf90_inq_varid(VncInputID, trim(VVarName), VVarID        ) )
+       elseif(DataIn .eq. all)  then
+          call check(nf90_open(trim(InputFileName), nf90_nowrite, VORncInputID ))
+          call check(nf90_open(trim(InputFileName), nf90_nowrite, DIVncInputID ))
+          call check(nf90_inq_varid(VORncInputID,  trim(VORVarName),  VORVarID ) )
+          call check(nf90_inq_varid(DIVncInputID,  trim(DIVVarName),  DIVVarID ) )
+          call check(nf90_open(InputFileName, nf90_nowrite, UncInputID ) )
+          call check(nf90_open(InputFileName, nf90_nowrite, VncInputID ) )
+          call check(nf90_inq_varid(UncInputID, trim(UVarName), UVarID        ) )
+          call check(nf90_inq_varid(VncInputID, trim(VVarName), VVarID        ) )
        endif
-       
+
        if(local_moisture) then
           call check(nf90_open(trim(InputFileName), nf90_nowrite, TSncInputID ) )
           call check(nf90_inq_varid(  TSncInputID,   trim(TSVarName), TSVarID ) )
@@ -243,7 +295,7 @@ contains
           call check(nf90_open(InputFileName, nf90_nowrite, PrecipConvncInputID ) )
           call check(nf90_inq_varid(PrecipConvncInputID, trim(PrecipConvVarName), PrecipConvVarID) )
           call check(nf90_open(InputFileName, nf90_nowrite, SfcFluxLHncInputID ) )
-          call check(nf90_inq_varid(SfcFluxLHncInputID, trim(SfcFluxLHVarName), SfcFluxLHVarID) )        
+          call check(nf90_inq_varid(SfcFluxLHncInputID, trim(SfcFluxLHVarName), SfcFluxLHVarID) )
           call check(nf90_open(InputFileName, nf90_nowrite, SfcFluxSHncInputID ) )
           call check(nf90_inq_varid(SfcFluxSHncInputID, trim(SfcFluxSHVarName), SfcFluxSHVarID) )
           call check(nf90_open(InputFileName, nf90_nowrite, SfcFluxSWncInputID ) )
@@ -288,7 +340,7 @@ contains
 
     isentrope   = local_isentrope
     moisture    = local_moisture
-    virtual     = local_virtual 
+    virtual     = local_virtual
     bucket      = local_bucket
 
 
@@ -315,7 +367,9 @@ contains
               bucket_depth_cond_grid,            bucket_depth_lh_grid,        &
                                                 bucket_diffusion_grid,        &
                   drag_coeff_mo_grid,              drag_coeff_lh_grid,        &
-                  drag_coeff_sh_grid)                                      
+                  drag_coeff_sh_grid, &
+                  dt_u_drag_grid, &
+                  dt_v_drag_grid)
 
 ! ------------------------------ inout variables ------------------------------
 
@@ -331,7 +385,8 @@ contains
                    dt_shum_cond_grid,               dt_shum_conv_grid,        &
                    dt_shum_diff_grid,               dt_temp_cond_grid,        &
                    dt_temp_conv_grid,               dt_temp_diff_grid,        &
-                    dt_temp_rad_grid,                 dt_temp_sw_grid
+                    dt_temp_rad_grid,                 dt_temp_sw_grid,        &
+                      dt_u_drag_grid,                 dt_v_drag_grid
 
 
     real, intent(out), dimension(:,:)  ::                                     &
@@ -346,14 +401,14 @@ contains
               bucket_depth_cond_grid,            bucket_depth_lh_grid,        &
                                                 bucket_diffusion_grid,        &
                   drag_coeff_mo_grid,              drag_coeff_lh_grid,        &
-                  drag_coeff_sh_grid                     
+                  drag_coeff_sh_grid
 
 ! ------------------------------ local variables ------------------------------
 
     integer ::                                                                &
          local_num_lat,    &  ! number of latitudes in current window
          local_num_lon,    &  ! number of longitudes in current window
-         num_lev,          &  ! number of vertical levels 
+         num_lev,          &  ! number of vertical levels
          k                    ! level index
 
     integer, dimension(5) ::                                                  &
@@ -368,7 +423,7 @@ contains
 
 
 
-#ifdef GRIB 
+#ifdef GRIB
     if(data_source .eq. era40) then
 
        ! Offsets for reading from ERA40 GRIB files:
@@ -387,7 +442,7 @@ contains
 
           call read_grib(      GRIBID,                 vor_grid(:,:,k) )
           GRIBID = GRIBID + GRIBOff(2)
-          
+
           call read_grib(      GRIBID,                 div_grid(:,:,k) )
 
           if(k .eq. 1)  GRIBOff(2) = 1
@@ -396,14 +451,14 @@ contains
 
        GRIBID = GRIBID + 1
 
-    else 
+    else
 #endif
 
 
 
 
      if(DataIn.eq.u_and_v) then
-           
+
        call check(nf90_get_var(UncInputID, UVarID, u_grid,                    &
             start = (/ 1, 1, 1, int(nsteps)/),                                &
             count = (/ local_num_lon, local_num_lat, num_lev, 1/) ))
@@ -455,6 +510,15 @@ contains
      call check(nf90_get_var(DiabRadncInputID, DiabRadVarID, dt_temp_rad_grid,  &
           start = (/ 1, 1, 1, int(nsteps)/),                               &
           count = (/ local_num_lon, local_num_lat, num_lev, 1/) ))
+
+     call check(nf90_get_var(UDragTendncInputID, UDragTendVarID, dt_u_drag_grid, &
+          start = (/ 1, 1, 1, int(nsteps)/),                                     &
+          count = (/ local_num_lon, local_num_lat, num_lev, 1/) ))
+
+     call check(nf90_get_var(VDragTendncInputID, VDragTendVarID, dt_v_drag_grid, &
+          start = (/ 1, 1, 1, int(nsteps)/),                                     &
+          count = (/ local_num_lon, local_num_lat, num_lev, 1/) ))
+
 
      if(moisture) then
 
@@ -559,7 +623,7 @@ contains
      endif
 
 
-#ifdef GRIB 
+#ifdef GRIB
   end if
 #endif
 
@@ -570,7 +634,7 @@ end subroutine read_data
 subroutine read_surf_geopotential(                                            &
                            SGVarName,                 SGInputFileName,        &
                    surf_geopotential)
-     
+
 ! ------------------------------ input arguments ------------------------------
 
   character(len = *), intent(in) ::                                           &
@@ -587,7 +651,7 @@ subroutine read_surf_geopotential(                                            &
   integer :: SGncInputID, SGVarID
 
 ! ------------------------------ executable code ------------------------------
-#ifdef GRIB 
+#ifdef GRIB
   if (Data_source .eq. era40) then
 
      call read_grib(               1,               surf_geopotential )
@@ -597,11 +661,11 @@ subroutine read_surf_geopotential(                                            &
        call check(nf90_open(  SGInputFileName, nf90_nowrite,   SGncInputID ) )
        call check(nf90_inq_varid(SGncInputID, trim(SGVarName), SGVarID))
        call check(nf90_get_var(SGncInputID, SGVarID, surf_geopotential ))
-       
+
        surf_geopotential = surf_geopotential * grav
-       
+
        call check(nf90_close( SGncInputID ))
-#ifdef GRIB 
+#ifdef GRIB
     endif
 #endif
 
@@ -611,15 +675,15 @@ subroutine read_surf_geopotential(                                            &
 ! ##############################################################################
 
  subroutine get_dimensions( num_lat, num_lon, num_levels, num_Times)
-   
+
 ! ------------------------------ input arguments ------------------------------
 
    integer, intent(out) ::                                                    &
         num_lon,           &   !                                              &
-        num_lat,           &   ! 
+        num_lat,           &   !
         num_levels,        &
         num_Times
-   
+
 ! ------------------------------ output arguments -----------------------------
 
    integer ::                                                                 &
@@ -627,7 +691,7 @@ subroutine read_surf_geopotential(                                            &
 
 ! ------------------------------ executable code ------------------------------
 
-#ifdef GRIB 
+#ifdef GRIB
    if(data_source .eq. era40) then
       num_lon = 320
       num_lat = 160
@@ -641,7 +705,7 @@ subroutine read_surf_geopotential(                                            &
       call check(nf90_Inquire_Dimension(TEMPncInputID, dimIDs(2), len = num_lat  ))
       call check(nf90_Inquire_Dimension(TEMPncInputID, dimIDs(3), len = num_levels))
       call check(nf90_Inquire_Dimension(TEMPncInputID, dimIDs(4), len = num_Times))
-#ifdef GRIB 
+#ifdef GRIB
    endif
 #endif
  end subroutine get_dimensions
@@ -676,7 +740,7 @@ subroutine read_surf_geopotential(                                            &
 
 
     if(data_source .eq. era40) then
-       
+
 
        data local_era40_lats/                                                &
          -89.142, -88.029, -86.911, -85.791, -84.670, -83.549, -82.428,      &
@@ -715,7 +779,7 @@ subroutine read_surf_geopotential(                                            &
     end if
 
     sin_lat = sin(deg_lat*pi/180.0)
-    
+
     do i=1, size(cos_lat_xy, 1)
        cos_lat_xy(i,:) = cos(deg_lat*pi/180.0)
     enddo
@@ -723,7 +787,7 @@ subroutine read_surf_geopotential(                                            &
     do i=1, size(sin_lat_xy, 1)
        sin_lat_xy(i,:) = sin(deg_lat*pi/180.0)
     enddo
-    
+
     do k=1, size(cos_lat_yz, 2)
        cos_lat_yz(:,k) = cos(deg_lat*pi/180.0)
     enddo
@@ -746,7 +810,7 @@ subroutine read_surf_geopotential(                                            &
     call check(nf90_get_var  (TEMPncInputID, pkVarID, local_pk) )
     call check(nf90_inq_varid(TEMPncInputID, 'bk',     bkVarID ) )
     call check(nf90_get_var  (TEMPncInputID, bkVarID, local_bk) )
- 
+
     pk = local_pk
     bk = local_bk
     ! full sigma levels (for now)
@@ -762,51 +826,51 @@ subroutine read_surf_geopotential(                                            &
                            surface_p,                          p_half,        &
                            ln_p_half,                          p_full,        &
                            ln_p_full )
-    
+
     real, intent (in),  dimension(:,:)   :: surface_p
     real, intent (out), dimension(:,:,:) :: p_half, ln_p_half, p_full, ln_p_full
-    
+
     !                           --- local variables ---
     real, dimension(size(p_half,1),size(p_half,2)) :: alpha
     integer :: k
-    
+
     !                           --- executable code ---
 
 
     do  k=1,size(p_half,3)
        p_half(:,:,k) = pk(k) + bk(k)*surface_p(:,:)
     end do
-    
+
     if(pk(1).eq.0.0 .and. bk(1).eq.0.0) then
-       
+
        do k=2,size(p_half,3)
           ln_p_half(:,:,k) = log(p_half(:,:,k))
        end do
-       
+
        do k=2,size(p_half,3)-1
           alpha  = 1.0  - p_half(:,:,k)*(ln_p_half(:,:,k+1) - ln_p_half(:,:,k))/(p_half(:,:,k+1) - p_half(:,:,k))
           ln_p_full(:,:,k) = ln_p_half(:,:,k+1) - alpha
        end do
-    
+
        ln_p_full(:,:,1) = ln_p_half(:,:,2) - 1.0
        ln_p_half(:,:,1) = 0.0
 
-       
+
     else
-       
+
        do k=1,size(p_half,3)
           ln_p_half(:,:,k) = log(p_half(:,:,k))
        end do
-       
+
        do k=1,size(p_half,3)-1
           alpha  = 1.0  - p_half(:,:,k)*(ln_p_half(:,:,k+1) - ln_p_half(:,:,k))/(p_half(:,:,k+1) - p_half(:,:,k))
           ln_p_full(:,:,k) = ln_p_half(:,:,k+1) - alpha
        end do
-       
+
     end if
     p_full = exp(ln_p_full)
-    
-    
+
+
   end subroutine pressure_variables_FMS
 
 ! ##############################################################################
@@ -832,28 +896,28 @@ subroutine read_surf_geopotential(                                            &
 ! ##############################################################################
 
   subroutine pressure_variables_NCEP(surface_p, sigma, p_half, ln_p_half, p_full, ln_p_full)
-  
+
     real, intent (in ), dimension(:,:  )  :: surface_p
     real, intent (out), dimension(:,:,:)  :: p_half, ln_p_half, p_full, ln_p_full
     real, intent (in), dimension(:    )  :: sigma
-    
+
     integer :: k
 
-    
+
     do  k=1,size(sigma)
        p_full(:,:,k) = sigma(k)*surface_p(:,:)
     end do
     ln_p_full = log(p_full)
 
     p_half(:,:,size(sigma)+1) = surface_p
-    
+
 ! there is almost certainly a better way of doing this:
     do k=size(sigma), 2, -1
        p_half(:,:,k) = 0.5*(p_full(:,:,k-1) + p_full(:,:,k))
     enddo
-    
+
     p_half(:,:,1) = 0.5*(p_full(:,:,1))
-    
+
     ln_p_half = log(p_half)
 
   end subroutine pressure_variables_NCEP
@@ -861,7 +925,7 @@ subroutine read_surf_geopotential(                                            &
 !###############################################################################
 
   subroutine pressure_variables_CCM3_init(sigma, local_pk, local_bk)
-    
+
     real, intent(out), dimension(:) :: sigma, local_pk, local_bk
 
     integer ::       &
@@ -871,39 +935,39 @@ subroutine read_surf_geopotential(                                            &
          hybmVarID,  & ! hybrid B coefficient at midpoints (full levels) var ID
          p0VarID,    & ! reference pressure variable ID
          levVarID      ! level (full levels) variable ID
-         
+
     real, dimension(size(sigma)) :: lev        ! level array
 
     allocate( hyam(size(sigma)))
     allocate( hybm(size(sigma)))
     allocate( hyai(size(sigma)+1))
     allocate( hybi(size(sigma)+1))
-    
+
     ! get coefficients from temperature input file
     call check(nf90_inq_varid(TEMPncInputID, 'hyam',     hyamVarID ) )
     call check(nf90_get_var  (TEMPncInputID, hyamVarID, hyam) )
-    
+
     call check(nf90_inq_varid(TEMPncInputID, 'hybm',     hybmVarID ) )
     call check(nf90_get_var  (TEMPncInputID, hybmVarID, hybm) )
-    
+
     call check(nf90_inq_varid(TEMPncInputID, 'hyai',     hyaiVarID ) )
     call check(nf90_get_var  (TEMPncInputID, hyaiVarID, hyai) )
-    
+
     call check(nf90_inq_varid(TEMPncInputID, 'hybi',     hybiVarID ) )
     call check(nf90_get_var  (TEMPncInputID, hybiVarID, hybi) )
 
     call check(nf90_inq_varid(TEMPncInputID, 'P0',       p0VarID ) )
     call check(nf90_get_var  (TEMPncInputID, p0VarID, p0) )
-    
+
     call check(nf90_inq_varid(TEMPncInputID, 'lev',      levVarID ) )
     call check(nf90_get_var  (TEMPncInputID, levVarID, lev) )
-    
+
     local_pk = hyai
     local_bk = hybi
-    
+
 ! generate sigma
     sigma = lev/1000.0
-    
+
   end subroutine pressure_variables_CCM3_init
 
 !###############################################################################
@@ -911,31 +975,31 @@ subroutine read_surf_geopotential(                                            &
   subroutine pressure_variables_ERA40_init(                                   &
                                sigma,                        local_pk,        &
                             local_bk )
-    
+
     real, intent(out), dimension(:) ::                                        &
          sigma,            &   ! sigma on full levels
          local_pk,         &   ! hybrid pressure coefficient
          local_bk              ! hybrid sigma coefficient
-         
+
 ! ------------------------------ local variables ------------------------------
 
     integer :: k ! level index
 
     real, dimension(60) ::                                                    &
-         era40_hyam,       &   ! 
-         era40_hybm  
+         era40_hyam,       &   !
+         era40_hybm
 
     real, dimension(61) ::                                                    &
-         era40_hyai,       &   ! 
-         era40_hybi  
-    
+         era40_hyai,       &   !
+         era40_hybi
+
     allocate( hyam(size(sigma))) ! hybrid A coeff at midpoints (full lev)
     allocate( hybm(size(sigma))) ! hybrid B coeff at midpoints (full lev)
     allocate( hyai(size(sigma)+1)) ! hybrid A coeff at interface (half lev)
     allocate( hybi(size(sigma)+1)) ! hybrid B coeff at interface (half lev)
-    
+
 ! ------------------------------ local variables ------------------------------
-    
+
     data era40_hyam/                                                          &
           10.00000,     28.21708,     49.98032,     78.55990,    113.95865,   &
          156.40275,    206.49757,    265.36379,    334.81736,    417.65684,   &
@@ -966,7 +1030,7 @@ subroutine read_surf_geopotential(                                            &
        0.7913508267,  0.8292546819,  0.8634693838,  0.8937345668,             &
        0.9198849561,  0.9418612920,  0.9597198053,  0.9736451215,             &
        0.9839613161,  0.9911418983,  0.9958234116,  0.9988145314 /
-    
+
     data era40_hyai/                                                          &
            0.00000,     20.00000,     38.42530,     63.64780,     95.63700,   &
          134.48300,    180.58400,    234.77900,    298.49600,    373.97200,   &
@@ -1015,19 +1079,19 @@ subroutine read_surf_geopotential(                                            &
 
     local_pk = hyai
     local_bk = hybi
-    
+
   end subroutine pressure_variables_ERA40_init
 
 !###############################################################################
 
   subroutine pressure_variables_CCM3(surface_p, p_half, ln_p_half, p_full, ln_p_full )
-  
+
     real, intent (in ), dimension(:,:  )  :: surface_p
     real, intent (out), dimension(:,:,:)  :: p_half, p_full
     real, intent (out), dimension(:,:,:)  :: ln_p_half, ln_p_full
-    
+
     integer k
-    
+
     ! pressure on full levels
     do k=1,size(p_full,3)
        p_full(:,:,k) = p0*hyam(k)+surface_p(:,:)*hybm(k)
@@ -1049,13 +1113,13 @@ subroutine read_surf_geopotential(                                            &
 
 !###############################################################################
   subroutine pressure_variables_ERA40(surface_p, p_half, ln_p_half, p_full, ln_p_full )
-  
+
     real, intent (in ), dimension(:,:  )  :: surface_p
     real, intent (out), dimension(:,:,:)  :: p_half, p_full
     real, intent (out), dimension(:,:,:)  :: ln_p_half, ln_p_full
-    
+
     integer k
-    
+
     ! pressure on full levels
     do k=1,size(p_full,3)
        p_full(:,:,k) = hyam(k)+surface_p(:,:)*hybm(k)
@@ -1077,13 +1141,13 @@ subroutine read_surf_geopotential(                                            &
 
 !##############################################################################
   subroutine check(status)
-    
+
     ! checks error status after each netcdf, prints out text message each time
-    !   an error code is returned. 
-    
+    !   an error code is returned.
+
     integer, intent(in) :: status
-    
-    if(status /= nf90_noerr) then 
+
+    if(status /= nf90_noerr) then
        write(*, *) trim(nf90_strerror(status))
     end if
   end subroutine check
@@ -1107,12 +1171,12 @@ subroutine read_surf_geopotential(                                            &
              write(*,'(A80)') 'pbopen: invalid open mode specified'
              stop
           else
-             write(*,'(A80)') 'pbopen: unspecified error code' 
+             write(*,'(A80)') 'pbopen: unspecified error code'
              stop
           end if
        else
             return
-         end if 
+         end if
       else if ( emos_routine .eq. 'pbclose' ) then
          if ( error_code .ne. 0 ) then
            if (      error_code .eq. -1 ) then
@@ -1196,7 +1260,7 @@ subroutine read_surf_geopotential(                                            &
 
 !###############################################################################
 
-#ifdef GRIB 
+#ifdef GRIB
 
     subroutine get_field_data( words_ioarray, iarray, rarray )
 !      ------------------------------------------------------------------
@@ -1292,7 +1356,7 @@ subroutine read_surf_geopotential(                                            &
 !!$      else
 !!$         call grprs2(ksec0,ksec2,psec2)
 !!$      endif
-!!$ 
+!!$
 !!$     if( (ksec1(5).eq.0).or.(ksec1(5).eq.128) ) then
 !!$         write (*,*) 'grdemo: no section 3 in grib message.'
 !!$      else
@@ -1317,7 +1381,7 @@ subroutine read_surf_geopotential(                                            &
     end subroutine get_field_data
 
 ! ##############################################################################
-   
+
 
 
     subroutine read_grib(      GRIBID,                          outarr )
@@ -1333,7 +1397,7 @@ subroutine read_surf_geopotential(                                            &
 
       real, dimension(:, :) ::                                                &
            outarr
-      
+
 ! ------------------------------ local variables ------------------------------
 
     integer ::                                                                &
@@ -1356,7 +1420,7 @@ subroutine read_surf_geopotential(                                            &
     real, dimension( words_per_mb ) ::                                        &
          rarraysphh,       &   ! GRIB real array with real harmonic data
          rarraygrid            ! GRIB real array with real gridpoint data
-             
+
     integer ::                                                                &
          words_into_grid,  &   ! words converted into gridpoint array
          ierror,           &   ! error code for GRIB functions
@@ -1364,10 +1428,10 @@ subroutine read_surf_geopotential(                                            &
          i,                &   ! longitude counter
          j,                &   ! latitude counter
          m                     ! grib array index
-    
+
     integer, dimension(5) ::                                                  &
          GRIBOff               ! GRIB offsets
-    
+
     integer ::                                                                &
          pbgget,           &   ! GRIB reading function
          intf,             &   ! GRIB interpolation initialization
@@ -1414,13 +1478,13 @@ subroutine read_surf_geopotential(                                            &
                         words_per_mb,                          GRIBID )
 
        words_into_grid = words_per_mb
-       
+
        ierror = intf(     iarraysphh,                    words_per_mb,        &
                           rarraysphh,                      iarraygrid,        &
                      words_into_grid,                      rarraygrid )
        call check_error_status(                                               &
                             'intf',                            ierror )
-       
+
        call get_field_data(                                                   &
                         words_per_mb,                      iarraygrid,        &
                           rarraygrid )
