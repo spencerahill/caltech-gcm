@@ -186,10 +186,15 @@ subroutine surface_flux_1d (                                           &
 
 
   where (avail)
+     ! Spencer Hill 2020-04: using quadratic drag rather than Monin-Obukhov.
      ! surface layer drag coefficients
-     drag_t = cd_t * w_atm
-     drag_q = cd_q * w_atm
-     drag_m = cd_m * w_atm
+     ! drag_t = cd_t * w_atm
+     ! drag_q = cd_q * w_atm
+     ! drag_m = cd_m * w_atm
+     drag_t = 0.
+     drag_q = 0.
+     drag_m = 0.
+
 
      ! density
      rho = p_atm / (rdgas * tv_atm)
@@ -228,10 +233,7 @@ subroutine surface_flux_1d (                                           &
         dedq_atm = -rho_drag ! d(latent heat flux)/d(atmospheric mixing ratio)
      endwhere
 
-     ! end LJJ addition
-
      q_star = flux_q / (u_star * rho)             ! moisture scale
-     ! ask Chris and Steve K if we still want to keep this for diagnostics
      q_surf = q_atm + flux_q / (rho*cd_q*w_atm)   ! surface specific humidity
 
      ! upward long wave radiation
