@@ -2,8 +2,8 @@
 #SBATCH --ntasks=8
 #SBATCH --nodes=1
 #SBATCH --mem-per-cpu=2G
-#SBATCH --time=01:30:00
-#SBATCH --job-name=fms_analysis2d
+#SBATCH --time=04:00:00
+#SBATCH --job-name=analysis2d_fms
 #SBATCH --output=../out_err/slurm_%j.out
 #SBATCH --error=../out_err/slurm_%j.err
 #SBATCH --export=ALL
@@ -78,13 +78,13 @@ cd ${scratch_dir}
 foreach ncfile (`/bin/ls $uncombined_dir/${date_name}.*.nc.0000`)
   cp $ncfile:r.???? ${scratch_dir}
   set ncfile_tail = $ncfile:t
-  # rm -f $ncfile_tail:r
   $mppnccombine $ncfile_tail:r
   if ($status == 0) then
+     cp $ncfile_tail:r ${uncombined_dir}
      mv $ncfile_tail:r ${input_dir}
      echo "$ncfile:r combined in ${scratch_dir} on $HOSTNAME"
   endif
-  # rm -f $ncfile_tail:r.????
+  rm -f $ncfile_tail:r.????
 end
 
 
@@ -92,7 +92,6 @@ end
 
 # This gets set to 0 if an indicator suggests any instance of analysis failed.
 set successful_analysis = 1
-
 
 # Build analysis code
 if ( ! -d $exe_dir ) mkdir -p $exe_dir
@@ -207,11 +206,10 @@ if ( $successful_analysis == 1 ) then
 
   mv -f $output_dir/${date_name}*.nc  ${data_dir}/history/
   mv -f $uncombined_dir:h:h/logfiles/${date_name}.* ${data_dir}/logfiles/
-#  mv -f $output_dir/logfiles/$date_name.* ${data_dir}/logfiles/
+  mv -f $output_dir/logfiles/$date_name.* ${data_dir}/logfiles/
 
-
-
-  # copy run script and srcmods to a tar file in output (overwrite this file with each submission of this run)
+  # copy run script and srcmods to a tar file in output (overwrite this file
+  # with each submission of this run)
   cd $fms_home:h/exp/${exp_name}/
   tar czvf ${data_dir}/scripts.tgz run/run_${run_name} srcmods/
 
@@ -249,7 +247,6 @@ end
 if ( ${successful_data} == 1 ) then
     echo "  History and surface files at ${data_dir}, removing uncombined files at ${uncombined_dir}"
     rm -f ${uncombined_dir}/${date_name}.*.nc.????
-    rmdir ${uncombined_dir}
 endif
 
 # clean up
