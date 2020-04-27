@@ -1289,7 +1289,7 @@ contains
     call check(nf90_put_var(ncFileID, statVarID(134), dt_u_drag_avg, &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
-    call check(nf90_put_var(ncFileID, statVarID(135), dt_u_drag_avg, &
+    call check(nf90_put_var(ncFileID, statVarID(135), dt_v_drag_avg, &
          start = (/ 1, 1 /), count = (/ num_lat, num_lev /) ))
 
     if(moisture) then
